@@ -28,6 +28,10 @@ export const cssClasses = {
 };
 
 export const strings = {
+  ARIA_LABEL: 'aria-label',
+  ARIA_VALUEMAX: 'aria-valuemax',
+  ARIA_VALUEMIN: 'aria-valuemin',
+  ARIA_VALUENOW: 'aria-valuenow',
   BUFFER_SELECTOR: '.mdc-linear-progress__buffer',
   PRIMARY_BAR_SELECTOR: '.mdc-linear-progress__primary-bar',
 };
