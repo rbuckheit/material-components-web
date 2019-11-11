@@ -48,7 +48,7 @@ test('defaultAdapter returns a complete adapter implementation', () => {
 
 const setupTest = () => setupFoundationTest(MDCLinearProgressFoundation);
 
-test('#setDeterminate adds class, resets transforms, and removes aria-valuenow', () => {
+test('#setDeterminate false adds class, resets transforms, and removes aria-valuenow', () => {
   const {foundation, mockAdapter} = setupTest();
   td.when(mockAdapter.hasClass(cssClasses.INDETERMINATE_CLASS)).thenReturn(false);
   const primaryBar = {};
