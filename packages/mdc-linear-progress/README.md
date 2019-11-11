@@ -110,6 +110,7 @@ The adapter for linear progress must provide the following functions, with corre
 | `removeAttribute(attributeName: string) => void` | Removes the specified attribute from the root element. |
 | `removeClass(className: string) => void` | Removes a class from the root element. |
 | `hasClass(className: string) => boolean` | Returns boolean indicating whether the root element has a given class. |
+| `forceLayout() => void` | Force-trigger a layout on the root element. This is needed to restart animations correctly. |
 | `getPrimaryBar() => Element` | Returns the primary bar element. |
 | `getBuffer() => Element` | Returns the buffer element. |
 | `setAttribute(attributeName: string, value: string) => void` | Sets the specified attribute on the root element. |
