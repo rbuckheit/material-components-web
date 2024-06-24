@@ -27,76 +27,96 @@ import {MDCRipple, MDCRippleFactory} from '@material/ripple/component';
 import {MDCRippleFoundation} from '@material/ripple/foundation';
 import {MDCRippleCapableSurface} from '@material/ripple/types';
 import {MDCTabIndicator, MDCTabIndicatorFactory} from '@material/tab-indicator/component';
+
 import {MDCTabAdapter} from './adapter';
 import {MDCTabFoundation} from './foundation';
 import {MDCTabDimensions, MDCTabInteractionEventDetail} from './types';
 
-export type MDCTabFactory = (el: Element, foundation?: MDCTabFoundation) => MDCTab;
+/** MDC Tab Factory */
+export type MDCTabFactory = (el: HTMLElement, foundation?: MDCTabFoundation) =>
+    MDCTab;
 
-export class MDCTab extends MDCComponent<MDCTabFoundation> implements MDCRippleCapableSurface {
-  static attachTo(root: Element): MDCTab {
+/** MDC Tab */
+export class MDCTab extends MDCComponent<MDCTabFoundation> implements
+    MDCRippleCapableSurface {
+  static override attachTo(root: HTMLElement): MDCTab {
     return new MDCTab(root);
   }
 
-  id!: string; // assigned in initialize();
+  id!: string;  // assigned in initialize();
 
-  // Public visibility for this property is required by MDCRippleCapableSurface.
-  root_!: HTMLElement; // assigned in MDCComponent constructor
+  private ripple!: MDCRipple;              // assigned in initialize();
+  private tabIndicator!: MDCTabIndicator;  // assigned in initialize();
+  private content!: HTMLElement;           // assigned in initialize();
+  private handleClick!:
+      SpecificEventListener<'click'>;  // assigned in initialize();
 
-  private ripple_!: MDCRipple; // assigned in initialize();
-  private tabIndicator_!: MDCTabIndicator; // assigned in initialize();
-  private content_!: HTMLElement; // assigned in initialize();
-  private handleClick_!: SpecificEventListener<'click'>; // assigned in initialize();
-
-  initialize(
-      rippleFactory: MDCRippleFactory = (el, foundation) => new MDCRipple(el, foundation),
-      tabIndicatorFactory: MDCTabIndicatorFactory = (el) => new MDCTabIndicator(el),
+  override initialize(
+      rippleFactory:
+          MDCRippleFactory = (el, foundation) => new MDCRipple(el, foundation),
+      tabIndicatorFactory:
+          MDCTabIndicatorFactory = (el) => new MDCTabIndicator(el),
   ) {
-    this.id = this.root_.id;
-    const rippleSurface = this.root_.querySelector<HTMLElement>(MDCTabFoundation.strings.RIPPLE_SELECTOR)!;
-    const rippleAdapter = {
-      ...MDCRipple.createAdapter(this),
-      addClass: (className: string) => rippleSurface.classList.add(className),
-      removeClass: (className: string) => rippleSurface.classList.remove(className),
-      updateCssVariable: (varName: string, value: string) => rippleSurface.style.setProperty(varName, value),
+    this.id = this.root.id;
+    const rippleFoundation =
+        new MDCRippleFoundation(MDCRipple.createAdapter(this));
+    this.ripple = rippleFactory(this.root, rippleFoundation);
+
+    const tabIndicatorElement = this.root.querySelector<HTMLElement>(
+        MDCTabFoundation.strings.TAB_INDICATOR_SELECTOR)!;
+    this.tabIndicator = tabIndicatorFactory(tabIndicatorElement);
+    this.content = this.root.querySelector<HTMLElement>(
+        MDCTabFoundation.strings.CONTENT_SELECTOR)!;
+  }
+
+  override initialSyncWithDOM() {
+    this.handleClick = () => {
+      this.foundation.handleClick();
     };
-    const rippleFoundation = new MDCRippleFoundation(rippleAdapter);
-    this.ripple_ = rippleFactory(this.root_, rippleFoundation);
-
-    const tabIndicatorElement = this.root_.querySelector(MDCTabFoundation.strings.TAB_INDICATOR_SELECTOR)!;
-    this.tabIndicator_ = tabIndicatorFactory(tabIndicatorElement);
-    this.content_ = this.root_.querySelector<HTMLElement>(MDCTabFoundation.strings.CONTENT_SELECTOR)!;
+    this.listen('click', this.handleClick);
   }
 
-  initialSyncWithDOM() {
-    this.handleClick_ = () => this.foundation_.handleClick();
-    this.listen('click', this.handleClick_);
-  }
-
-  destroy() {
-    this.unlisten('click', this.handleClick_);
-    this.ripple_.destroy();
+  override destroy() {
+    this.unlisten('click', this.handleClick);
+    this.ripple.destroy();
     super.destroy();
   }
 
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
+  override getDefaultFoundation() {
+    // DO NOT INLINE this variable. For backward compatibility, foundations take
+    // a Partial<MDCFooAdapter>. To ensure we don't accidentally omit any
+    // methods, we need a separate, strongly typed adapter variable.
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     const adapter: MDCTabAdapter = {
-      setAttr: (attr, value) => this.root_.setAttribute(attr, value),
-      addClass: (className) => this.root_.classList.add(className),
-      removeClass: (className) => this.root_.classList.remove(className),
-      hasClass: (className) => this.root_.classList.contains(className),
-      activateIndicator: (previousIndicatorClientRect) => this.tabIndicator_.activate(previousIndicatorClientRect),
-      deactivateIndicator: () => this.tabIndicator_.deactivate(),
-      notifyInteracted: () => this.emit<MDCTabInteractionEventDetail>(
-          MDCTabFoundation.strings.INTERACTED_EVENT, {tabId: this.id}, true /* bubble */),
-      getOffsetLeft: () => this.root_.offsetLeft,
-      getOffsetWidth: () => this.root_.offsetWidth,
-      getContentOffsetLeft: () => this.content_.offsetLeft,
-      getContentOffsetWidth: () => this.content_.offsetWidth,
-      focus: () => this.root_.focus(),
+      setAttr: (attr, value) => {
+        this.safeSetAttribute(this.root, attr, value);
+      },
+      addClass: (className) => {
+        this.root.classList.add(className);
+      },
+      removeClass: (className) => {
+        this.root.classList.remove(className);
+      },
+      hasClass: (className) => this.root.classList.contains(className),
+      activateIndicator: (previousIndicatorClientRect) => {
+        this.tabIndicator.activate(previousIndicatorClientRect);
+      },
+      deactivateIndicator: () => {
+        this.tabIndicator.deactivate();
+      },
+      notifyInteracted: () => {
+        this.emit<MDCTabInteractionEventDetail>(
+            MDCTabFoundation.strings.INTERACTED_EVENT, {tabId: this.id},
+            true /* bubble */);
+      },
+      getOffsetLeft: () => this.root.offsetLeft,
+      getOffsetWidth: () => this.root.offsetWidth,
+      getContentOffsetLeft: () => this.content.offsetLeft,
+      getContentOffsetWidth: () => this.content.offsetWidth,
+      focus: () => {
+        this.root.focus();
+      },
+      isFocused: () => this.root === document.activeElement,
     };
     // tslint:enable:object-literal-sort-keys
     return new MDCTabFoundation(adapter);
@@ -106,42 +126,42 @@ export class MDCTab extends MDCComponent<MDCTabFoundation> implements MDCRippleC
    * Getter for the active state of the tab
    */
   get active(): boolean {
-    return this.foundation_.isActive();
+    return this.foundation.isActive();
   }
 
   set focusOnActivate(focusOnActivate: boolean) {
-    this.foundation_.setFocusOnActivate(focusOnActivate);
+    this.foundation.setFocusOnActivate(focusOnActivate);
   }
 
   /**
    * Activates the tab
    */
-  activate(computeIndicatorClientRect?: ClientRect) {
-    this.foundation_.activate(computeIndicatorClientRect);
+  activate(computeIndicatorClientRect?: DOMRect) {
+    this.foundation.activate(computeIndicatorClientRect);
   }
 
   /**
    * Deactivates the tab
    */
   deactivate() {
-    this.foundation_.deactivate();
+    this.foundation.deactivate();
   }
 
   /**
    * Returns the indicator's client rect
    */
-  computeIndicatorClientRect(): ClientRect {
-    return this.tabIndicator_.computeContentClientRect();
+  computeIndicatorClientRect(): DOMRect {
+    return this.tabIndicator.computeContentClientRect();
   }
 
   computeDimensions(): MDCTabDimensions {
-    return this.foundation_.computeDimensions();
+    return this.foundation.computeDimensions();
   }
 
   /**
    * Focuses the tab
    */
   focus() {
-    this.root_.focus();
+    this.root.focus();
   }
 }

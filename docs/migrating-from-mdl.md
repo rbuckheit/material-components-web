@@ -98,11 +98,12 @@ MDL:
 MDC Web:
 
 ```html
-<div class="mdc-text-field">
-  <input class="mdc-text-field__input" type="text" id="input">
-  <label for="input" class="mdc-floating-label">Input Label</label>
-  <div class="mdc-line-ripple"></div>
-</div>
+<label class="mdc-text-field mdc-text-field--filled">
+  <span class="mdc-text-field__ripple"></span>
+  <input class="mdc-text-field__input" type="text" aria-labelledby="label">
+  <span id="label" class="mdc-floating-label">Input Label</span>
+  <span class="mdc-line-ripple"></span>
+</label>
 ```
 
 In MDC Web, the DOM you specify must be complete; unlike MDL, the library will not create any missing elements for you.
@@ -124,11 +125,12 @@ For every component that you want to automatically initialize, set the `data-mdc
 element, with the component’s class name as the value. For example:
 
 ```html
-<div class="mdc-text-field" data-mdc-auto-init="MDCTextField">
-  <input class="mdc-text-field__input" type="text" id="input">
-  <label for="input" class="mdc-floating-label">Input Label</label>
-  <div class="mdc-line-ripple"></div>
-</div>
+<label class="mdc-text-field mdc-text-field--filled" data-mdc-auto-init="MDCTextField">
+  <span class="mdc-text-field__ripple"></span>
+  <input class="mdc-text-field__input" type="text" aria-labelledby="label">
+  <span id="label" class="mdc-floating-label">Input Label</span>
+  <span class="mdc-line-ripple"></span>
+</label>
 ```
 
 Auto-initialization needs to be triggered explicitly, but doing so is very straightforward.
@@ -301,7 +303,7 @@ The following table summarizes the current situation (TBI = to be investigated):
 | `mdl-card` | [`@material/card`](../packages/mdc-card/README.md) | Very different DOM. More options in MDC Web. |
 | `mdl-checkbox` | [`@material/checkbox`](../packages/mdc-checkbox/README.md) | Very different DOM. Recommended use with [`@material/form-field`](../packages/mdc-form-field/README.md). |
 | `mdl-chip` | [`@material/chips`](../packages/mdc-chips/README.md) | Different DOM and variants. |
-| `mdl-data-table` | TBI | [#57](https://github.com/material-components/material-components-web/issues/57) - In the interim, consider using MDC List with flexbox. |
+| `mdl-data-table` | [`@material/data-table`](../packages/mdc-data-table/README.md) | |
 | `mdl-dialog` | [`@material/dialog`](../packages/mdc-dialog/README.md) | Sufficiently different from MDL. MDL uses the `dialog` element which has limited cross-browser support. `mdc-dialog` relies on elements with more cross-browser support. |
 | `mdl-footer` | None | Not currently planned for MDC Web. |
 | `mdl-grid` | [`@material/layout-grid`](../packages/mdc-layout-grid/README.md) | Very similar. No offsets in MDC Web. |
@@ -317,11 +319,11 @@ The following table summarizes the current situation (TBI = to be investigated):
 | `mdl-shadow` | [`@material/elevation`](../packages/mdc-elevation/README.md) | Similar usage. |
 | `mdl-slider` | [`@material/slider`](../packages/mdc-slider/README.md) | Very different DOM. |
 | `mdl-snackbar` | [`@material/snackbar`](../packages/mdc-snackbar/README.md) | Very different DOM. |
-| `mdl-spinner` | TBI | [#30](https://github.com/material-components/material-components-web/issues/30) |
+| `mdl-spinner` | [`@material/circular-progress`](../packages/mdc-circular-progress/README.md) |  |
 | `mdl-switch` | [`@material/switch`](../packages/mdc-switch/README.md) | Very different DOM. |
 | `mdl-tabs` | Split into [`@material/tab-bar`](../packages/mdc-tab-bar/README.md), [`@material/tab-scroller`](../packages/mdc-tab-scroller/README.md), [`@material/tab`](../packages/mdc-tab/README.md), [`@material/tab-indicator`](../packages/mdc-tab-indicator/README.md) | Very different DOM. |
 | `mdl-text-field` | [`@material/textfield`](../packages/mdc-textfield/README.md) | Very different DOM and variants. |
-| `mdl-tooltip` | TBI | [#24](https://github.com/material-components/material-components-web/issues/24) |
+| `mdl-tooltip` | [`@material/tooltip`](../packages/mdc-tooltip/README.md) | |
 | `mdl-typography` | [`@material/typography`](../packages/mdc-typography/README.md) | Somewhat different usage; different/updated typography styles. |
 
 MDC Web also includes several new components/packages which have no MDL equivalents. See the list of

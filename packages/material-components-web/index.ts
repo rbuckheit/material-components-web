@@ -22,16 +22,17 @@
  */
 
 import autoInit from '@material/auto-init/index';
+import * as banner from '@material/banner/index';
 import * as base from '@material/base/index';
 import * as checkbox from '@material/checkbox/index';
-import * as chips from '@material/chips/index';
+import * as chips from '@material/chips/deprecated/index';
+import * as circularProgress from '@material/circular-progress/index';
 import * as dataTable from '@material/data-table/index';
 import * as dialog from '@material/dialog/index';
 import * as dom from '@material/dom/index';
 import * as drawer from '@material/drawer/index';
 import * as floatingLabel from '@material/floating-label/index';
 import * as formField from '@material/form-field/index';
-import * as gridList from '@material/grid-list/index';
 import * as iconButton from '@material/icon-button/index';
 import * as lineRipple from '@material/line-ripple/index';
 import * as linearProgress from '@material/linear-progress/index';
@@ -41,6 +42,7 @@ import * as menu from '@material/menu/index';
 import * as notchedOutline from '@material/notched-outline/index';
 import * as radio from '@material/radio/index';
 import * as ripple from '@material/ripple/index';
+import * as segmentedButton from '@material/segmented-button/index';
 import * as select from '@material/select/index';
 import * as slider from '@material/slider/index';
 import * as snackbar from '@material/snackbar/index';
@@ -50,18 +52,20 @@ import * as tabIndicator from '@material/tab-indicator/index';
 import * as tabScroller from '@material/tab-scroller/index';
 import * as tab from '@material/tab/index';
 import * as textField from '@material/textfield/index';
+import * as tooltip from '@material/tooltip/index';
 import * as topAppBar from '@material/top-app-bar/index';
 
 // Register all components
+autoInit.register('MDCBanner', banner.MDCBanner);
 autoInit.register('MDCCheckbox', checkbox.MDCCheckbox);
 autoInit.register('MDCChip', chips.MDCChip);
 autoInit.register('MDCChipSet', chips.MDCChipSet);
+autoInit.register('MDCCircularProgress', circularProgress.MDCCircularProgress);
 autoInit.register('MDCDataTable', dataTable.MDCDataTable);
 autoInit.register('MDCDialog', dialog.MDCDialog);
 autoInit.register('MDCDrawer', drawer.MDCDrawer);
 autoInit.register('MDCFloatingLabel', floatingLabel.MDCFloatingLabel);
 autoInit.register('MDCFormField', formField.MDCFormField);
-autoInit.register('MDCGridList', gridList.MDCGridList);
 autoInit.register('MDCIconButtonToggle', iconButton.MDCIconButtonToggle);
 autoInit.register('MDCLineRipple', lineRipple.MDCLineRipple);
 autoInit.register('MDCLinearProgress', linearProgress.MDCLinearProgress);
@@ -71,27 +75,30 @@ autoInit.register('MDCMenuSurface', menuSurface.MDCMenuSurface);
 autoInit.register('MDCNotchedOutline', notchedOutline.MDCNotchedOutline);
 autoInit.register('MDCRadio', radio.MDCRadio);
 autoInit.register('MDCRipple', ripple.MDCRipple);
+autoInit.register('MDCSegmentedButton', segmentedButton.MDCSegmentedButton);
 autoInit.register('MDCSelect', select.MDCSelect);
 autoInit.register('MDCSlider', slider.MDCSlider);
 autoInit.register('MDCSnackbar', snackbar.MDCSnackbar);
 autoInit.register('MDCSwitch', switchControl.MDCSwitch);
 autoInit.register('MDCTabBar', tabBar.MDCTabBar);
 autoInit.register('MDCTextField', textField.MDCTextField);
+autoInit.register('MDCTooltip', tooltip.MDCTooltip);
 autoInit.register('MDCTopAppBar', topAppBar.MDCTopAppBar);
 
 // Export all components.
 export {
   autoInit,
+  banner,
   base,
   checkbox,
   chips,
+  circularProgress,
   dataTable,
   dialog,
   dom,
   drawer,
   floatingLabel,
   formField,
-  gridList,
   iconButton,
   lineRipple,
   linearProgress,
@@ -101,6 +108,7 @@ export {
   notchedOutline,
   radio,
   ripple,
+  segmentedButton,
   select,
   slider,
   snackbar,
@@ -110,5 +118,6 @@ export {
   tabIndicator,
   tabScroller,
   textField,
+  tooltip,
   topAppBar,
 };

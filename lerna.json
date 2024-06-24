@@ -1,12 +1,19 @@
 {
-  "version": "3.2.0",
+  "version": "14.0.0",
   "command": {
     "version": {
       "conventionalCommits": true
     },
     "publish": {
       "ignoreChanges": [
-        "*.md"
+        "*.md",
+        "*.test-increment3"
+      ]
+    },
+    "bootstrap": {
+      "hoist": true,
+      "npmClientArgs": [
+        "--no-package-lock"
       ]
     }
   },

@@ -22,19 +22,21 @@
  */
 
 import {MDCFoundation} from '@material/base/foundation';
+
 import {MDCFormFieldAdapter} from './adapter';
 import {cssClasses, strings} from './constants';
 
+/** MDC Form Field Foundation */
 export class MDCFormFieldFoundation extends MDCFoundation<MDCFormFieldAdapter> {
-  static get cssClasses() {
+  static override get cssClasses() {
     return cssClasses;
   }
 
-  static get strings() {
+  static override get strings() {
     return strings;
   }
 
-  static get defaultAdapter(): MDCFormFieldAdapter {
+  static override get defaultAdapter(): MDCFormFieldAdapter {
     return {
       activateInputRipple: () => undefined,
       deactivateInputRipple: () => undefined,
@@ -43,25 +45,29 @@ export class MDCFormFieldFoundation extends MDCFoundation<MDCFormFieldAdapter> {
     };
   }
 
-  private readonly clickHandler_: () => void;
+  private readonly click: () => void;
 
   constructor(adapter?: Partial<MDCFormFieldAdapter>) {
     super({...MDCFormFieldFoundation.defaultAdapter, ...adapter});
 
-    this.clickHandler_ = () => this.handleClick_();
+    this.click = () => {
+      this.handleClick();
+    };
   }
 
-  init() {
-    this.adapter_.registerInteractionHandler('click', this.clickHandler_);
+  override init() {
+    this.adapter.registerInteractionHandler('click', this.click);
   }
 
-  destroy() {
-    this.adapter_.deregisterInteractionHandler('click', this.clickHandler_);
+  override destroy() {
+    this.adapter.deregisterInteractionHandler('click', this.click);
   }
 
-  private handleClick_() {
-    this.adapter_.activateInputRipple();
-    requestAnimationFrame(() => this.adapter_.deactivateInputRipple());
+  private handleClick() {
+    this.adapter.activateInputRipple();
+    requestAnimationFrame(() => {
+      this.adapter.deactivateInputRipple();
+    });
   }
 }
 

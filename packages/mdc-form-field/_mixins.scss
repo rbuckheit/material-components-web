@@ -20,50 +20,5 @@
 // THE SOFTWARE.
 //
 
-@import "@material/feature-targeting/functions";
-@import "@material/feature-targeting/mixins";
-@import "@material/rtl/mixins";
-@import "@material/theme/mixins";
-@import "@material/typography/mixins";
-@import "./variables";
-
-@mixin mdc-form-field-core-styles($query: mdc-feature-all()) {
-  $feat-color: mdc-feature-create-target($query, color);
-  $feat-structure: mdc-feature-create-target($query, structure);
-
-  .mdc-form-field {
-    @include mdc-typography(body2, $query);
-
-    @include mdc-feature-targets($feat-color) {
-      @include mdc-theme-prop(color, text-primary-on-background);
-    }
-
-    @include mdc-feature-targets($feat-structure) {
-      display: inline-flex;
-      align-items: center;
-      vertical-align: middle;
-    }
-
-    // stylelint-disable-next-line selector-max-type
-    > label {
-      @include mdc-feature-targets($feat-structure) {
-        @include mdc-rtl-reflexive-property(margin, 0, auto);
-        @include mdc-rtl-reflexive-property(padding, $mdc-form-field-item-spacing, 0);
-
-        order: 0;
-      }
-    }
-  }
-
-  .mdc-form-field--align-end {
-    // stylelint-disable-next-line selector-max-type
-    > label {
-      @include mdc-feature-targets($feat-structure) {
-        @include mdc-rtl-reflexive-property(margin, auto, 0);
-        @include mdc-rtl-reflexive-property(padding, 0, $mdc-form-field-item-spacing);
-
-        order: -1;
-      }
-    }
-  }
-}
+/// @deprecated Import `_form-field.scss` instead.
+@forward './form-field' show core-styles;

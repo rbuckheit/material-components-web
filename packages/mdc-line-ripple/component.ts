@@ -22,13 +22,17 @@
  */
 
 import {MDCComponent} from '@material/base/component';
+
 import {MDCLineRippleAdapter} from './adapter';
 import {MDCLineRippleFoundation} from './foundation';
 
-export type MDCLineRippleFactory = (el: Element, foundation?: MDCLineRippleFoundation) => MDCLineRipple;
+/** MDC Line Ripple Factory */
+export type MDCLineRippleFactory =
+    (el: HTMLElement, foundation?: MDCLineRippleFoundation) => MDCLineRipple;
 
+/** MDC Line Ripple */
 export class MDCLineRipple extends MDCComponent<MDCLineRippleFoundation> {
-  static attachTo(root: Element): MDCLineRipple {
+  static override attachTo(root: HTMLElement): MDCLineRipple {
     return new MDCLineRipple(root);
   }
 
@@ -36,14 +40,14 @@ export class MDCLineRipple extends MDCComponent<MDCLineRippleFoundation> {
    * Activates the line ripple
    */
   activate() {
-    this.foundation_.activate();
+    this.foundation.activate();
   }
 
   /**
    * Deactivates the line ripple
    */
   deactivate() {
-    this.foundation_.deactivate();
+    this.foundation.deactivate();
   }
 
   /**
@@ -51,20 +55,31 @@ export class MDCLineRipple extends MDCComponent<MDCLineRippleFoundation> {
    * The `rippleCenter` is the x-coordinate of the middle of the ripple.
    */
   setRippleCenter(xCoordinate: number) {
-    this.foundation_.setRippleCenter(xCoordinate);
+    this.foundation.setRippleCenter(xCoordinate);
   }
 
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
+  override getDefaultFoundation() {
+    // DO NOT INLINE this variable. For backward compatibility, foundations take
+    // a Partial<MDCFooAdapter>. To ensure we don't accidentally omit any
+    // methods, we need a separate, strongly typed adapter variable.
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     const adapter: MDCLineRippleAdapter = {
-      addClass: (className) => this.root_.classList.add(className),
-      removeClass: (className) => this.root_.classList.remove(className),
-      hasClass: (className) => this.root_.classList.contains(className),
-      setStyle: (propertyName, value) => (this.root_ as HTMLElement).style.setProperty(propertyName, value),
-      registerEventHandler: (evtType, handler) => this.listen(evtType, handler),
-      deregisterEventHandler: (evtType, handler) => this.unlisten(evtType, handler),
+      addClass: (className) => {
+        this.root.classList.add(className);
+      },
+      removeClass: (className) => {
+        this.root.classList.remove(className);
+      },
+      hasClass: (className) => this.root.classList.contains(className),
+      setStyle: (propertyName, value) => {
+        this.root.style.setProperty(propertyName, value);
+      },
+      registerEventHandler: (eventType, handler) => {
+        this.listen(eventType, handler);
+      },
+      deregisterEventHandler: (eventType, handler) => {
+        this.unlisten(eventType, handler);
+      },
     };
     // tslint:enable:object-literal-sort-keys
     return new MDCLineRippleFoundation(adapter);

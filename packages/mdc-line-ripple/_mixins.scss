@@ -20,8 +20,7 @@
 // THE SOFTWARE.
 //
 
-// Public
-
-@mixin mdc-line-ripple-color($color) {
-  @include mdc-theme-prop(background-color, $color);
-}
+/// @deprecated Import `_line-ripple.scss` or `_line-ripple-theme.scss` instead.
+@forward './line-ripple' show core-styles;
+@forward './line-ripple-theme' show height, active-height, active-color,
+  inactive-color;

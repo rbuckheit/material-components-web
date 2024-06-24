@@ -24,28 +24,29 @@
 import {cssClasses} from '../constants';
 import {MDCTopAppBarFoundation} from '../standard/foundation';
 
+/** MDC Fixed Top App Bar Foundation */
 export class MDCFixedTopAppBarFoundation extends MDCTopAppBarFoundation {
   /**
    * State variable for the previous scroll iteration top app bar state
    */
-  private wasScrolled_ = false;
+  private wasScrolled = false;
 
   /**
-   * Scroll handler for applying/removing the modifier class on the fixed top app bar.
-   * @override
+   * Scroll handler for applying/removing the modifier class on the fixed top
+   * app bar.
    */
-  handleTargetScroll() {
-    const currentScroll = this.adapter_.getViewportScrollY();
+  override handleTargetScroll() {
+    const currentScroll = this.adapter.getViewportScrollY();
 
     if (currentScroll <= 0) {
-      if (this.wasScrolled_) {
-        this.adapter_.removeClass(cssClasses.FIXED_SCROLLED_CLASS);
-        this.wasScrolled_ = false;
+      if (this.wasScrolled) {
+        this.adapter.removeClass(cssClasses.FIXED_SCROLLED_CLASS);
+        this.wasScrolled = false;
       }
     } else {
-      if (!this.wasScrolled_) {
-        this.adapter_.addClass(cssClasses.FIXED_SCROLLED_CLASS);
-        this.wasScrolled_ = true;
+      if (!this.wasScrolled) {
+        this.adapter.addClass(cssClasses.FIXED_SCROLLED_CLASS);
+        this.wasScrolled = true;
       }
     }
   }

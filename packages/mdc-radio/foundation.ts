@@ -22,19 +22,21 @@
  */
 
 import {MDCFoundation} from '@material/base/foundation';
+
 import {MDCRadioAdapter} from './adapter';
 import {cssClasses, strings} from './constants';
 
+/** MDC Radio Foundation */
 export class MDCRadioFoundation extends MDCFoundation<MDCRadioAdapter> {
-  static get cssClasses() {
+  static override get cssClasses() {
     return cssClasses;
   }
 
-  static get strings() {
+  static override get strings() {
     return strings;
   }
 
-  static get defaultAdapter(): MDCRadioAdapter {
+  static override get defaultAdapter(): MDCRadioAdapter {
     return {
       addClass: () => undefined,
       removeClass: () => undefined,
@@ -48,11 +50,11 @@ export class MDCRadioFoundation extends MDCFoundation<MDCRadioAdapter> {
 
   setDisabled(disabled: boolean) {
     const {DISABLED} = MDCRadioFoundation.cssClasses;
-    this.adapter_.setNativeControlDisabled(disabled);
+    this.adapter.setNativeControlDisabled(disabled);
     if (disabled) {
-      this.adapter_.addClass(DISABLED);
+      this.adapter.addClass(DISABLED);
     } else {
-      this.adapter_.removeClass(DISABLED);
+      this.adapter.removeClass(DISABLED);
     }
   }
 }

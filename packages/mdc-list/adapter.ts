@@ -32,13 +32,14 @@ export interface MDCListAdapter {
   /**
    * Returns the attribute value of list item at given `index`.
    */
-  getAttributeForElementIndex(index: number, attr: string): string | null;
+  getAttributeForElementIndex(index: number, attr: string): string|null;
 
   getListItemCount(): number;
 
   getFocusedElementIndex(): number;
 
-  setAttributeForElementIndex(index: number, attribute: string, value: string): void;
+  setAttributeForElementIndex(index: number, attribute: string, value: string):
+      void;
 
   addClassForElementIndex(index: number, className: string): void;
 
@@ -50,10 +51,11 @@ export interface MDCListAdapter {
   focusItemAtIndex(index: number): void;
 
   /**
-   * Sets the tabindex to the value specified for all button/a element children of
-   * the list item at the index specified.
+   * Sets the tabindex to the value specified for all button/a element children
+   * of the list item at the index specified.
    */
-  setTabIndexForListItemChildren(listItemIndex: number, tabIndexValue: string): void;
+  setTabIndexForListItemChildren(listItemIndex: number, tabIndexValue: string):
+      void;
 
   /**
    * @return true if radio button is present at given list item index.
@@ -76,6 +78,13 @@ export interface MDCListAdapter {
   isRootFocused(): boolean;
 
   /**
+   * @param index list item index.
+   * @param className the name of the class whose presence is to be checked.
+   * @return true if list item at `index` has class `className`.
+   */
+  listItemAtIndexHasClass(index: number, className: string): boolean;
+
+  /**
    * Sets the checked status of checkbox or radio at given list item index.
    */
   setCheckedCheckboxOrRadioAtIndex(index: number, isChecked: boolean): void;
@@ -86,7 +95,21 @@ export interface MDCListAdapter {
   notifyAction(index: number): void;
 
   /**
+   * Notifies that items at the given indices have changed its
+   * selection state through user interaction (e.g. click).
+   *
+   * This is invoked only for changes caused by user interaction
+   * to match with the native `change` event semantics.
+   */
+  notifySelectionChange(changedIndices: number[]): void;
+
+  /**
    * @return true when the current focused element is inside list root.
    */
   isFocusInsideList(): boolean;
+
+  /**
+   * @return the primary text content of the list item at index.
+   */
+  getPrimaryTextAtIndex(index: number): string;
 }

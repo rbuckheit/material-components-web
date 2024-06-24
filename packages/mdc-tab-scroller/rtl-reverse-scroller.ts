@@ -24,16 +24,17 @@
 import {MDCTabScrollerRTL} from './rtl-scroller';
 import {MDCTabScrollerAnimation, MDCTabScrollerHorizontalEdges} from './types';
 
+/** MDC Tab Scroller RTL Reverse */
 export class MDCTabScrollerRTLReverse extends MDCTabScrollerRTL {
   getScrollPositionRTL(translateX: number): number {
-    const currentScrollLeft = this.adapter_.getScrollAreaScrollLeft();
+    const currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
     // Scroll values on most browsers are ints instead of floats so we round
     return Math.round(currentScrollLeft - translateX);
   }
 
   scrollToRTL(scrollX: number): MDCTabScrollerAnimation {
-    const currentScrollLeft = this.adapter_.getScrollAreaScrollLeft();
-    const clampedScrollLeft = this.clampScrollValue_(scrollX);
+    const currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
+    const clampedScrollLeft = this.clampScrollValue(scrollX);
     return {
       finalScrollPosition: clampedScrollLeft,
       scrollDelta: currentScrollLeft - clampedScrollLeft,
@@ -41,8 +42,9 @@ export class MDCTabScrollerRTLReverse extends MDCTabScrollerRTL {
   }
 
   incrementScrollRTL(scrollX: number): MDCTabScrollerAnimation {
-    const currentScrollLeft = this.adapter_.getScrollAreaScrollLeft();
-    const clampedScrollLeft = this.clampScrollValue_(currentScrollLeft + scrollX);
+    const currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
+    const clampedScrollLeft =
+        this.clampScrollValue(currentScrollLeft + scrollX);
     return {
       finalScrollPosition: clampedScrollLeft,
       scrollDelta: currentScrollLeft - clampedScrollLeft,
@@ -53,17 +55,17 @@ export class MDCTabScrollerRTLReverse extends MDCTabScrollerRTL {
     return scrollX + translateX;
   }
 
-  private calculateScrollEdges_(): MDCTabScrollerHorizontalEdges {
-    const contentWidth = this.adapter_.getScrollContentOffsetWidth();
-    const rootWidth = this.adapter_.getScrollAreaOffsetWidth();
+  private calculateScrollEdges(): MDCTabScrollerHorizontalEdges {
+    const contentWidth = this.adapter.getScrollContentOffsetWidth();
+    const rootWidth = this.adapter.getScrollAreaOffsetWidth();
     return {
       left: contentWidth - rootWidth,
       right: 0,
     };
   }
 
-  private clampScrollValue_(scrollX: number): number {
-    const edges = this.calculateScrollEdges_();
+  private clampScrollValue(scrollX: number): number {
+    const edges = this.calculateScrollEdges();
     return Math.min(Math.max(edges.right, scrollX), edges.left);
   }
 }

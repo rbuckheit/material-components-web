@@ -47,6 +47,7 @@ npm install @material/tab-bar
             <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
           </span>
           <span class="mdc-tab__ripple"></span>
+          <div class="mdc-tab__focus-ring"></div>
         </button>
       </div>
     </div>
@@ -57,10 +58,10 @@ npm install @material/tab-bar
 ### Styles
 
 ```scss
-@import "@material/tab-bar/mdc-tab-bar";
-@import "@material/tab-scroller/mdc-tab-scroller";
-@import "@material/tab-indicator/mdc-tab-indicator";
-@import "@material/tab/mdc-tab";
+@use "@material/tab-bar/mdc-tab-bar";
+@use "@material/tab-scroller/mdc-tab-scroller";
+@use "@material/tab-indicator/mdc-tab-indicator";
+@use "@material/tab/mdc-tab";
 ```
 
 ### JavaScript Instantiation
@@ -104,7 +105,11 @@ To customize the width of the tab bar, use the following mixin.
 
 Mixin | Description
 --- | ---
-`mdc-tab-bar-width($width)` | Customizes the width of the tab bar.
+`width($width)` | Customizes the width of the tab bar.
+`density($density-scale)` | Sets density scale to default tab bar variant. Use `stacked-density` mixin for stacked variant. Supported density scales `-4`, `-3`, `-2`, `-1` and `0`.
+`stacked-density($density-scale)` | Sets density scale to stacked tab bar variant. Supported density scales `-4`, `-3`, `-2`, `-1` and `0`.
+`tab-scroller-transition($duration-ms, $timing-function)` | Sets the CSS transition for the tab scrolling animation. This mixin is a proxy to `mdc-tab-scroller-transition` mixin.
+
 
 ## `MDCTabBar` Properties and Methods
 
@@ -154,6 +159,6 @@ Method Signature | Description
 --- | ---
 `activateTab(index: number) => void` | Activates the tab at the given index.
 `setUseAutomaticActivation(useAutomaticActivation: boolean) => void` | Sets how tabs activate in response to keyboard interaction. Automatic (`true`) activates as soon as a tab is focused with arrow keys; manual (`false`) activates only when the user presses space/enter.
-`handleKeyDown(evt: Event) => void` | Handles the logic for the `"keydown"` event.
-`handleTabInteraction(evt: Event) => void` | Handles the logic for the `"MDCTab:interacted"` event.
+`handleKeyDown(event: Event) => void` | Handles the logic for the `"keydown"` event.
+`handleTabInteraction(event: Event) => void` | Handles the logic for the `"MDCTab:interacted"` event.
 `scrollIntoView(index: number) => void` | Scrolls the Tab at the given index into view.

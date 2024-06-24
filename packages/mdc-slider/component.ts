@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google Inc.
+ * Copyright 2020 Google Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,166 +22,335 @@
  */
 
 import {MDCComponent} from '@material/base/component';
+import {EventType, SpecificEventListener} from '@material/base/types';
 import {applyPassive} from '@material/dom/events';
+import {matches} from '@material/dom/ponyfill';
+import {MDCRippleAdapter} from '@material/ripple/adapter';
+import {MDCRipple} from '@material/ripple/component';
+import {MDCRippleFoundation} from '@material/ripple/foundation';
+
 import {MDCSliderAdapter} from './adapter';
-import {strings} from './constants';
+import {cssClasses, events} from './constants';
 import {MDCSliderFoundation} from './foundation';
+import {MDCSliderChangeEventDetail, Thumb, TickMark} from './types';
 
+/** Vanilla implementation of slider component. */
 export class MDCSlider extends MDCComponent<MDCSliderFoundation> {
-  static attachTo(root: Element) {
-    return new MDCSlider(root);
+  static override attachTo(root: HTMLElement, options: {
+    skipInitialUIUpdate?: boolean
+  } = {}) {
+    return new MDCSlider(root, undefined, options);
   }
 
-  protected root_!: HTMLElement; // assigned in MDCComponent constructor
+  private inputs!: HTMLInputElement[];  // Assigned in #initialize.
+  private thumbs!: HTMLElement[];       // Assigned in #initialize.
+  private trackActive!: HTMLElement;    // Assigned in #initialize.
+  private ripples!: MDCRipple[];        // Assigned in #initialize.
 
-  private thumbContainer_!: HTMLElement; // assigned in initialize()
-  private track_!: HTMLElement; // assigned in initialize()
-  private pinValueMarker_!: HTMLElement; // assigned in initialize()
-  private trackMarkerContainer_!: HTMLElement; // assigned in initialize()
+  private skipInitialUIUpdate = false;
+  // Function that maps a slider value to the value of the `aria-valuetext`
+  // attribute on the thumb element.
+  private valueToAriaValueTextFn: ((value: number) => string)|null = null;
 
-  get value(): number {
-    return this.foundation_.getValue();
-  }
-
-  set value(value: number) {
-    this.foundation_.setValue(value);
-  }
-
-  get min(): number {
-    return this.foundation_.getMin();
-  }
-
-  set min(min: number) {
-    this.foundation_.setMin(min);
-  }
-
-  get max(): number {
-    return this.foundation_.getMax();
-  }
-
-  set max(max: number) {
-    this.foundation_.setMax(max);
-  }
-
-  get step(): number {
-    return this.foundation_.getStep();
-  }
-
-  set step(step: number) {
-    this.foundation_.setStep(step);
-  }
-
-  get disabled(): boolean {
-    return this.foundation_.isDisabled();
-  }
-
-  set disabled(disabled: boolean) {
-    this.foundation_.setDisabled(disabled);
-  }
-
-  initialize() {
-    this.thumbContainer_ = this.root_.querySelector<HTMLElement>(strings.THUMB_CONTAINER_SELECTOR)!;
-    this.track_ = this.root_.querySelector<HTMLElement>(strings.TRACK_SELECTOR)!;
-    this.pinValueMarker_ = this.root_.querySelector<HTMLElement>(strings.PIN_VALUE_MARKER_SELECTOR)!;
-    this.trackMarkerContainer_ = this.root_.querySelector<HTMLElement>(strings.TRACK_MARKER_CONTAINER_SELECTOR)!;
-  }
-
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
-    // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
+  override getDefaultFoundation() {
+    // tslint:disable:object-literal-sort-keys Methods should be in the same
+    // order as the adapter interface.
     const adapter: MDCSliderAdapter = {
-      hasClass: (className) => this.root_.classList.contains(className),
-      addClass: (className) => this.root_.classList.add(className),
-      removeClass: (className) => this.root_.classList.remove(className),
-      getAttribute: (name) => this.root_.getAttribute(name),
-      setAttribute: (name, value) => this.root_.setAttribute(name, value),
-      removeAttribute: (name) => this.root_.removeAttribute(name),
-      computeBoundingRect: () => this.root_.getBoundingClientRect(),
-      getTabIndex: () => this.root_.tabIndex,
-      registerInteractionHandler: (evtType, handler) => this.listen(evtType, handler, applyPassive()),
-      deregisterInteractionHandler: (evtType, handler) => this.unlisten(evtType, handler, applyPassive()),
-      registerThumbContainerInteractionHandler: (evtType, handler) => {
-        this.thumbContainer_.addEventListener(evtType, handler, applyPassive());
+      hasClass: (className) => this.root.classList.contains(className),
+      addClass: (className) => {
+        this.root.classList.add(className);
       },
-      deregisterThumbContainerInteractionHandler: (evtType, handler) => {
-        this.thumbContainer_.removeEventListener(evtType, handler, applyPassive());
+      removeClass: (className) => {
+        this.root.classList.remove(className);
       },
-      registerBodyInteractionHandler: (evtType, handler) => document.body.addEventListener(evtType, handler),
-      deregisterBodyInteractionHandler: (evtType, handler) => document.body.removeEventListener(evtType, handler),
-      registerResizeHandler: (handler) => window.addEventListener('resize', handler),
-      deregisterResizeHandler: (handler) => window.removeEventListener('resize', handler),
-      notifyInput: () => this.emit<MDCSlider>(strings.INPUT_EVENT, this), // TODO(acdvorak): Create detail interface
-      notifyChange: () => this.emit<MDCSlider>(strings.CHANGE_EVENT, this), // TODO(acdvorak): Create detail interface
-      setThumbContainerStyleProperty: (propertyName, value) => {
-        this.thumbContainer_.style.setProperty(propertyName, value);
+      addThumbClass: (className, thumb: Thumb) => {
+        this.getThumbEl(thumb).classList.add(className);
       },
-      setTrackStyleProperty: (propertyName, value) => this.track_.style.setProperty(propertyName, value),
-      setMarkerValue: (value) => this.pinValueMarker_.innerText = value.toLocaleString(),
-      appendTrackMarkers: (numMarkers) => {
-        const frag = document.createDocumentFragment();
-        for (let i = 0; i < numMarkers; i++) {
-          const marker = document.createElement('div');
-          marker.classList.add('mdc-slider__track-marker');
-          frag.appendChild(marker);
+      removeThumbClass: (className, thumb: Thumb) => {
+        this.getThumbEl(thumb).classList.remove(className);
+      },
+      getAttribute: (attribute) => this.root.getAttribute(attribute),
+      getInputValue: (thumb: Thumb) => this.getInput(thumb).value,
+      setInputValue: (value: string, thumb: Thumb) => {
+        this.getInput(thumb).value = value;
+      },
+      getInputAttribute: (attribute, thumb: Thumb) =>
+          this.getInput(thumb).getAttribute(attribute),
+      setInputAttribute: (attribute, value, thumb: Thumb) => {
+        this.getInput(thumb).setAttribute(attribute, value);
+      },
+      removeInputAttribute: (attribute, thumb: Thumb) => {
+        this.getInput(thumb).removeAttribute(attribute);
+      },
+      focusInput: (thumb: Thumb) => {
+        this.getInput(thumb).focus();
+      },
+      isInputFocused: (thumb: Thumb) =>
+          this.getInput(thumb) === document.activeElement,
+      shouldHideFocusStylesForPointerEvents: () => false,
+      getThumbKnobWidth: (thumb: Thumb) => {
+        return this.getThumbEl(thumb)
+            .querySelector<HTMLElement>(`.${cssClasses.THUMB_KNOB}`)!
+            .getBoundingClientRect()
+            .width;
+      },
+      getThumbBoundingClientRect: (thumb: Thumb) =>
+          this.getThumbEl(thumb).getBoundingClientRect(),
+      getBoundingClientRect: () => this.root.getBoundingClientRect(),
+      getValueIndicatorContainerWidth: (thumb: Thumb) => {
+        return this.getThumbEl(thumb)
+            .querySelector<HTMLElement>(
+                `.${cssClasses.VALUE_INDICATOR_CONTAINER}`)!
+            .getBoundingClientRect()
+            .width;
+      },
+      isRTL: () => getComputedStyle(this.root).direction === 'rtl',
+      setThumbStyleProperty: (propertyName, value, thumb: Thumb) => {
+        this.getThumbEl(thumb).style.setProperty(propertyName, value);
+      },
+      removeThumbStyleProperty: (propertyName, thumb: Thumb) => {
+        this.getThumbEl(thumb).style.removeProperty(propertyName);
+      },
+      setTrackActiveStyleProperty: (propertyName, value) => {
+        this.trackActive.style.setProperty(propertyName, value);
+      },
+      removeTrackActiveStyleProperty: (propertyName) => {
+        this.trackActive.style.removeProperty(propertyName);
+      },
+      setValueIndicatorText: (value: number, thumb: Thumb) => {
+        const valueIndicatorEl =
+            this.getThumbEl(thumb).querySelector<HTMLElement>(
+                `.${cssClasses.VALUE_INDICATOR_TEXT}`);
+        valueIndicatorEl!.textContent = String(value);
+      },
+      getValueToAriaValueTextFn: () => this.valueToAriaValueTextFn,
+      updateTickMarks: (tickMarks: TickMark[]) => {
+        let tickMarksContainer = this.root.querySelector<HTMLElement>(
+            `.${cssClasses.TICK_MARKS_CONTAINER}`);
+        if (!tickMarksContainer) {
+          tickMarksContainer = document.createElement('div');
+          tickMarksContainer.classList.add(cssClasses.TICK_MARKS_CONTAINER);
+          const track =
+              this.root.querySelector<HTMLElement>(`.${cssClasses.TRACK}`);
+          track!.appendChild(tickMarksContainer);
         }
-        this.trackMarkerContainer_.appendChild(frag);
-      },
-      removeTrackMarkers: () => {
-        while (this.trackMarkerContainer_.firstChild) {
-          this.trackMarkerContainer_.removeChild(this.trackMarkerContainer_.firstChild);
+
+        if (tickMarks.length !== tickMarksContainer.children.length) {
+          while (tickMarksContainer.firstChild) {
+            tickMarksContainer.removeChild(tickMarksContainer.firstChild);
+          }
+          this.addTickMarks(tickMarksContainer, tickMarks);
+        } else {
+          this.updateTickMarks(tickMarksContainer, tickMarks);
         }
       },
-      setLastTrackMarkersStyleProperty: (propertyName, value) => {
-        // We remove and append new nodes, thus, the last track marker must be dynamically found.
-        const lastTrackMarker = this.root_.querySelector<HTMLElement>(strings.LAST_TRACK_MARKER_SELECTOR)!;
-        lastTrackMarker.style.setProperty(propertyName, value);
+      setPointerCapture: (pointerId) => {
+        this.root.setPointerCapture(pointerId);
       },
-      isRTL: () => getComputedStyle(this.root_).direction === 'rtl',
+      emitChangeEvent: (value, thumb: Thumb) => {
+        this.emit<MDCSliderChangeEventDetail>(events.CHANGE, {value, thumb});
+      },
+      emitInputEvent: (value, thumb: Thumb) => {
+        this.emit<MDCSliderChangeEventDetail>(events.INPUT, {value, thumb});
+      },
+      // tslint:disable-next-line:enforce-name-casing
+      emitDragStartEvent: (_, thumb: Thumb) => {
+        // Emitting event is not yet implemented. See issue:
+        // https://github.com/material-components/material-components-web/issues/6448
+
+        this.getRipple(thumb).activate();
+      },
+      // tslint:disable-next-line:enforce-name-casing
+      emitDragEndEvent: (_, thumb: Thumb) => {
+        // Emitting event is not yet implemented. See issue:
+        // https://github.com/material-components/material-components-web/issues/6448
+
+        this.getRipple(thumb).deactivate();
+      },
+      registerEventHandler: (eventType, handler) => {
+        this.listen(eventType, handler);
+      },
+      deregisterEventHandler: (eventType, handler) => {
+        this.unlisten(eventType, handler);
+      },
+      registerThumbEventHandler: (thumb, eventType, handler) => {
+        this.getThumbEl(thumb).addEventListener(eventType, handler);
+      },
+      deregisterThumbEventHandler: (thumb, eventType, handler) => {
+        this.getThumbEl(thumb).removeEventListener(eventType, handler);
+      },
+      registerInputEventHandler: (thumb, eventType, handler) => {
+        this.getInput(thumb).addEventListener(eventType, handler);
+      },
+      deregisterInputEventHandler: (thumb, eventType, handler) => {
+        this.getInput(thumb).removeEventListener(eventType, handler);
+      },
+      registerBodyEventHandler: (eventType, handler) => {
+        document.body.addEventListener(eventType, handler);
+      },
+      deregisterBodyEventHandler: (eventType, handler) => {
+        document.body.removeEventListener(eventType, handler);
+      },
+      registerWindowEventHandler: (eventType, handler) => {
+        window.addEventListener(eventType, handler);
+      },
+      deregisterWindowEventHandler: (eventType, handler) => {
+        window.removeEventListener(eventType, handler);
+      },
+      // tslint:enable:object-literal-sort-keys
     };
-    // tslint:enable:object-literal-sort-keys
     return new MDCSliderFoundation(adapter);
   }
 
-  initialSyncWithDOM() {
-    const origValueNow = this.parseFloat_(this.root_.getAttribute(strings.ARIA_VALUENOW), this.value);
-    const min = this.parseFloat_(this.root_.getAttribute(strings.ARIA_VALUEMIN), this.min);
-    const max = this.parseFloat_(this.root_.getAttribute(strings.ARIA_VALUEMAX), this.max);
+  /**
+   * Initializes component, with the following options:
+   * - `skipInitialUIUpdate`: Whether to skip updating the UI when initially
+   *   syncing with the DOM. This should be enabled when the slider position
+   *   is set before component initialization.
+   */
+  override initialize({skipInitialUIUpdate}: {skipInitialUIUpdate?:
+                                                  boolean} = {}) {
+    this.inputs = Array.from(
+        this.root.querySelectorAll<HTMLInputElement>(`.${cssClasses.INPUT}`));
+    this.thumbs = Array.from(
+        this.root.querySelectorAll<HTMLElement>(`.${cssClasses.THUMB}`));
+    this.trackActive =
+        this.root.querySelector<HTMLElement>(`.${cssClasses.TRACK_ACTIVE}`)!;
+    this.ripples = this.createRipples();
 
-    // min and max need to be set in the right order to avoid throwing an error
-    // when the new min is greater than the default max.
-    if (min >= this.max) {
-      this.max = max;
-      this.min = min;
-    } else {
-      this.min = min;
-      this.max = max;
+    if (skipInitialUIUpdate) {
+      this.skipInitialUIUpdate = true;
+    }
+  }
+
+  override initialSyncWithDOM() {
+    this.foundation.layout({skipUpdateUI: this.skipInitialUIUpdate});
+  }
+
+  /** Redraws UI based on DOM (e.g. element dimensions, RTL). */
+  layout() {
+    this.foundation.layout();
+  }
+
+  getValueStart(): number {
+    return this.foundation.getValueStart();
+  }
+
+  setValueStart(valueStart: number) {
+    this.foundation.setValueStart(valueStart);
+  }
+
+  getValue(): number {
+    return this.foundation.getValue();
+  }
+
+  setValue(value: number) {
+    this.foundation.setValue(value);
+  }
+
+  /** @return Slider disabled state. */
+  getDisabled(): boolean {
+    return this.foundation.getDisabled();
+  }
+
+  /** Sets slider disabled state. */
+  setDisabled(disabled: boolean) {
+    this.foundation.setDisabled(disabled);
+  }
+
+  /**
+   * Sets a function that maps the slider value to the value of the
+   * `aria-valuetext` attribute on the thumb element.
+   */
+  setValueToAriaValueTextFn(mapFn: ((value: number) => string)|null) {
+    this.valueToAriaValueTextFn = mapFn;
+  }
+
+  private getThumbEl(thumb: Thumb) {
+    return thumb === Thumb.END ? this.thumbs[this.thumbs.length - 1] :
+                                 this.thumbs[0];
+  }
+
+  private getInput(thumb: Thumb) {
+    return thumb === Thumb.END ? this.inputs[this.inputs.length - 1] :
+                                 this.inputs[0];
+  }
+
+  private getRipple(thumb: Thumb) {
+    return thumb === Thumb.END ? this.ripples[this.ripples.length - 1] :
+                                 this.ripples[0];
+  }
+
+  /** Adds tick mark elements to the given container. */
+  private addTickMarks(tickMarkContainer: HTMLElement, tickMarks: TickMark[]) {
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < tickMarks.length; i++) {
+      const div = document.createElement('div');
+      const tickMarkClass = tickMarks[i] === TickMark.ACTIVE ?
+          cssClasses.TICK_MARK_ACTIVE :
+          cssClasses.TICK_MARK_INACTIVE;
+      div.classList.add(tickMarkClass);
+      fragment.appendChild(div);
+    }
+    tickMarkContainer.appendChild(fragment);
+  }
+
+  /** Updates tick mark elements' classes in the given container. */
+  private updateTickMarks(
+      tickMarkContainer: HTMLElement, tickMarks: TickMark[]) {
+    const tickMarkEls = Array.from(tickMarkContainer.children);
+    for (let i = 0; i < tickMarkEls.length; i++) {
+      if (tickMarks[i] === TickMark.ACTIVE) {
+        tickMarkEls[i].classList.add(cssClasses.TICK_MARK_ACTIVE);
+        tickMarkEls[i].classList.remove(cssClasses.TICK_MARK_INACTIVE);
+      } else {
+        tickMarkEls[i].classList.add(cssClasses.TICK_MARK_INACTIVE);
+        tickMarkEls[i].classList.remove(cssClasses.TICK_MARK_ACTIVE);
+      }
+    }
+  }
+
+  /** Initializes thumb ripples. */
+  private createRipples(): MDCRipple[] {
+    const ripples = [];
+    const rippleSurfaces = Array.from(
+        this.root.querySelectorAll<HTMLElement>(`.${cssClasses.THUMB}`));
+    for (let i = 0; i < rippleSurfaces.length; i++) {
+      const rippleSurface = rippleSurfaces[i];
+      // Use the corresponding input as the focus source for the ripple (i.e.
+      // when the input is focused, the ripple is in the focused state).
+      const input = this.inputs[i];
+
+      const adapter: MDCRippleAdapter = {
+        ...MDCRipple.createAdapter(this),
+        addClass: (className: string) => {
+          rippleSurface.classList.add(className);
+        },
+        computeBoundingRect: () => rippleSurface.getBoundingClientRect(),
+        deregisterInteractionHandler: <K extends EventType>(
+            eventType: K, handler: SpecificEventListener<K>) => {
+          input.removeEventListener(eventType, handler);
+        },
+        isSurfaceActive: () => matches(input, ':active'),
+        isUnbounded: () => true,
+        registerInteractionHandler: <K extends EventType>(
+            eventType: K, handler: SpecificEventListener<K>) => {
+          input.addEventListener(eventType, handler, applyPassive());
+        },
+        removeClass: (className: string) => {
+          rippleSurface.classList.remove(className);
+        },
+        updateCssVariable: (varName: string, value: string) => {
+          rippleSurface.style.setProperty(varName, value);
+        },
+      };
+
+      const ripple =
+          new MDCRipple(rippleSurface, new MDCRippleFoundation(adapter));
+      ripple.unbounded = true;
+      ripples.push(ripple);
     }
 
-    this.step = this.parseFloat_(this.root_.getAttribute(strings.STEP_DATA_ATTR), this.step);
-    this.value = origValueNow;
-    this.disabled = (
-        this.root_.hasAttribute(strings.ARIA_DISABLED) &&
-        this.root_.getAttribute(strings.ARIA_DISABLED) !== 'false'
-    );
-    this.foundation_.setupTrackMarker();
-  }
-
-  layout() {
-    this.foundation_.layout();
-  }
-
-  stepUp(amount = (this.step || 1)) {
-    this.value += amount;
-  }
-
-  stepDown(amount = (this.step || 1)) {
-    this.value -= amount;
-  }
-
-  private parseFloat_(str: string | null, defaultValue: number) {
-    const num = parseFloat(str!); // tslint:disable-line:ban
-    const isNumeric = typeof num === 'number' && isFinite(num);
-    return isNumeric ? num : defaultValue;
+    return ripples;
   }
 }

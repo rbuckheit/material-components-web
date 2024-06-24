@@ -22,33 +22,49 @@
  */
 
 import {MDCComponent} from '@material/base/component';
+
 import {MDCSelectHelperTextAdapter} from './adapter';
 import {MDCSelectHelperTextFoundation} from './foundation';
 
+/** MDC Select Helper Text Factory */
 export type MDCSelectHelperTextFactory =
-    (el: Element, foundation?: MDCSelectHelperTextFoundation) => MDCSelectHelperText;
+    (el: HTMLElement, foundation?: MDCSelectHelperTextFoundation) =>
+        MDCSelectHelperText;
 
-export class MDCSelectHelperText extends MDCComponent<MDCSelectHelperTextFoundation> {
-  static attachTo(root: Element): MDCSelectHelperText {
+/** MDC Select Helper Text */
+export class MDCSelectHelperText extends
+    MDCComponent<MDCSelectHelperTextFoundation> {
+  static override attachTo(root: HTMLElement): MDCSelectHelperText {
     return new MDCSelectHelperText(root);
   }
 
-  get foundation(): MDCSelectHelperTextFoundation {
-    return this.foundation_;
+  // Provided for access by MDCSelect component
+  get foundationForSelect(): MDCSelectHelperTextFoundation {
+    return this.foundation;
   }
 
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
+  override getDefaultFoundation() {
+    // DO NOT INLINE this variable. For backward compatibility, foundations take
+    // a Partial<MDCFooAdapter>. To ensure we don't accidentally omit any
+    // methods, we need a separate, strongly typed adapter variable.
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     const adapter: MDCSelectHelperTextAdapter = {
-      addClass: (className) => this.root_.classList.add(className),
-      removeClass: (className) => this.root_.classList.remove(className),
-      hasClass: (className) => this.root_.classList.contains(className),
-      setAttr: (attr, value) => this.root_.setAttribute(attr, value),
-      removeAttr: (attr) => this.root_.removeAttribute(attr),
+      addClass: (className) => {
+        this.root.classList.add(className);
+      },
+      removeClass: (className) => {
+        this.root.classList.remove(className);
+      },
+      hasClass: (className) => this.root.classList.contains(className),
+      getAttr: (attr) => this.root.getAttribute(attr),
+      setAttr: (attr, value) => {
+        this.safeSetAttribute(this.root, attr, value);
+      },
+      removeAttr: (attr) => {
+        this.root.removeAttribute(attr);
+      },
       setContent: (content) => {
-        this.root_.textContent = content;
+        this.root.textContent = content;
       },
     };
     // tslint:enable:object-literal-sort-keys

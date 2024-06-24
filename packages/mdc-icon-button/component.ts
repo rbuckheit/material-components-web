@@ -24,60 +24,75 @@
 import {MDCComponent} from '@material/base/component';
 import {SpecificEventListener} from '@material/base/types';
 import {MDCRipple} from '@material/ripple/component';
+
 import {MDCIconButtonToggleAdapter} from './adapter';
 import {MDCIconButtonToggleFoundation} from './foundation';
 import {MDCIconButtonToggleEventDetail} from './types';
 
 const {strings} = MDCIconButtonToggleFoundation;
 
-export class MDCIconButtonToggle extends MDCComponent<MDCIconButtonToggleFoundation> {
-  static attachTo(root: HTMLElement) {
+/** MDC Icon Button Toggle */
+export class MDCIconButtonToggle extends
+    MDCComponent<MDCIconButtonToggleFoundation> {
+  static override attachTo(root: HTMLElement) {
     return new MDCIconButtonToggle(root);
   }
 
-  protected root_!: HTMLElement; // assigned in MDCComponent constructor
+  private readonly rippleComponent: MDCRipple = this.createRipple();
+  private handleClick!:
+      SpecificEventListener<'click'>;  // assigned in initialSyncWithDOM()
 
-  private readonly ripple_: MDCRipple = this.createRipple_();
-  private handleClick_!: SpecificEventListener<'click'>; // assigned in initialSyncWithDOM()
-
-  initialSyncWithDOM() {
-    this.handleClick_ = () => this.foundation_.handleClick();
-    this.listen('click', this.handleClick_);
+  override initialSyncWithDOM() {
+    this.handleClick = () => {
+      this.foundation.handleClick();
+    };
+    this.listen('click', this.handleClick);
   }
 
-  destroy() {
-    this.unlisten('click', this.handleClick_);
-    this.ripple_.destroy();
+  override destroy() {
+    this.unlisten('click', this.handleClick);
+    this.ripple.destroy();
     super.destroy();
   }
 
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
+  override getDefaultFoundation() {
+    // DO NOT INLINE this variable. For backward compatibility, foundations take
+    // a Partial<MDCFooAdapter>. To ensure we don't accidentally omit any
+    // methods, we need a separate, strongly typed adapter variable.
     const adapter: MDCIconButtonToggleAdapter = {
-      addClass: (className) => this.root_.classList.add(className),
-      hasClass: (className) => this.root_.classList.contains(className),
-      notifyChange: (evtData) => this.emit<MDCIconButtonToggleEventDetail>(strings.CHANGE_EVENT, evtData),
-      removeClass: (className) => this.root_.classList.remove(className),
-      setAttr: (attrName, attrValue) => this.root_.setAttribute(attrName, attrValue),
+      addClass: (className) => {
+        this.root.classList.add(className);
+      },
+      hasClass: (className) => this.root.classList.contains(className),
+      notifyChange: (eventData) => {
+        this.emit<MDCIconButtonToggleEventDetail>(
+            strings.CHANGE_EVENT, eventData);
+      },
+      removeClass: (className) => {
+        this.root.classList.remove(className);
+      },
+      getAttr: (attrName) => this.root.getAttribute(attrName),
+      setAttr: (attrName, attrValue) => {
+        this.safeSetAttribute(this.root, attrName, attrValue);
+      },
     };
     return new MDCIconButtonToggleFoundation(adapter);
   }
 
   get ripple(): MDCRipple {
-    return this.ripple_;
+    return this.rippleComponent;
   }
 
   get on(): boolean {
-    return this.foundation_.isOn();
+    return this.foundation.isOn();
   }
 
   set on(isOn: boolean) {
-    this.foundation_.toggle(isOn);
+    this.foundation.toggle(isOn);
   }
 
-  private createRipple_(): MDCRipple {
-    const ripple = new MDCRipple(this.root_);
+  private createRipple(): MDCRipple {
+    const ripple = new MDCRipple(this.root);
     ripple.unbounded = true;
     return ripple;
   }

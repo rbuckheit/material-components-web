@@ -8,8 +8,6 @@ Here are the guidelines we'd like you to follow:
   - [Development Process](#development-process)
     - [Setting up your development environment](#setting-up-your-development-environment)
     - [Building Components](#building-components)
-    - [Running development server](#running-development-server)
-      - [App Engine development server](#app-engine-development-server)
     - [Building MDC Web](#building-mdc-web)
     - [Linting / Testing / Coverage Enforcement](#linting--testing--coverage-enforcement)
       - [Running Tests across browsers](#running-tests-across-browsers)
@@ -54,30 +52,9 @@ Each component requires the following items in order to be complete:
 - A **foundation class** which is integrated into actual components
 - A **component class** using vanilla JS + SCSS
 - A **README.md** in its subdir which contains developer documentation on the component, including usage.
-- A **set of unit tests** within `test/unit/` with adequate coverage (which we enforce automatically).
-- A **screenshot test** within `test/screenshot/spec/` that shows example usage of the component. For more on screenshot tests, please refer to the [screenshot testing documentation](./test/screenshot/README.md).
+- A **set of unit tests** within `packages/<mdc-component>/test/` with adequate coverage (which we enforce automatically).
 
 You can find much more information with respect to building components within our [authoring components guide](./docs/authoring-components.md)
-
-### Running development server
-
-#### Local development server
-
-```	
-npm start
-# open http://localhost:8080	
-```
-
-`npm start` runs a [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html) instance that starts our screenshot test server. To read more about our screenshot testing framework please see [screenshot testing documentation](./test/screenshot/README.md).
-
-#### App Engine development server
-
-```
-MDC_ENV=development npm run build:demos && gcloud app deploy app.yaml --project google.com:mdc-web-dev --version $USER
-gcloud app browse
-```
-
-The above script will build and deploy the app to MDC Web's dev server with your userid as its version number, you can switch to your version by prepending `$USER-dot-` to the URL opened when you run `gcloud app browse`. This would be helpful if we need to share work-in-progress work within teams and designers.
 
 ### Building MDC Web
 
@@ -85,7 +62,6 @@ The above script will build and deploy the app to MDC Web's dev server with your
 npm run build # Cleans out build/ and builds unminified files for each MDC Web package
 npm run build:min # Builds minified files for each MDC Web package
 npm run dist # Runs both of the above commands sequentially
-npm run build:demos # Cleans out build/ and builds demo CSS/JS files, e.g. for deploying to App Engine
 ```
 
 ### Linting / Testing / Coverage Enforcement

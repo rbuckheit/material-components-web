@@ -21,23 +21,46 @@
  * THE SOFTWARE.
  */
 
-export const strings = {
-  ARIA_CHECKED: 'aria-checked',
-  CHECKMARK_SELECTOR: '.mdc-chip__checkmark',
-  ENTRY_ANIMATION_NAME: 'mdc-chip-entry',
-  INTERACTION_EVENT: 'MDCChip:interaction',
-  LEADING_ICON_SELECTOR: '.mdc-chip__icon--leading',
-  REMOVAL_EVENT: 'MDCChip:removal',
-  SELECTION_EVENT: 'MDCChip:selection',
-  TRAILING_ICON_INTERACTION_EVENT: 'MDCChip:trailingIconInteraction',
-  TRAILING_ICON_SELECTOR: '.mdc-chip__icon--trailing',
-};
+/**
+ * MDCChipCssClasses provides the named constants for class names.
+ */
+export enum MDCChipCssClasses {
+  SELECTING = 'mdc-evolution-chip--selecting',
+  DESELECTING = 'mdc-evolution-chip--deselecting',
+  SELECTING_WITH_PRIMARY_ICON =
+      'mdc-evolution-chip--selecting-with-primary-icon',
+  DESELECTING_WITH_PRIMARY_ICON =
+      'mdc-evolution-chip--deselecting-with-primary-icon',
+  DISABLED = 'mdc-evolution-chip--disabled',
+  ENTER = 'mdc-evolution-chip--enter',
+  EXIT = 'mdc-evolution-chip--exit',
+  SELECTED = 'mdc-evolution-chip--selected',
+  HIDDEN = 'mdc-evolution-chip--hidden',
+  WITH_PRIMARY_ICON = 'mdc-evolution-chip--with-primary-icon',
+}
 
-export const cssClasses = {
-  CHECKMARK: 'mdc-chip__checkmark',
-  CHIP_EXIT: 'mdc-chip--exit',
-  HIDDEN_LEADING_ICON: 'mdc-chip__icon--leading-hidden',
-  LEADING_ICON: 'mdc-chip__icon--leading',
-  SELECTED: 'mdc-chip--selected',
-  TRAILING_ICON: 'mdc-chip__icon--trailing',
-};
+/**
+ * MDCChipEvents provides the named constants for emitted events.
+ */
+export enum MDCChipEvents {
+  INTERACTION = 'MDCChip:interaction',
+  NAVIGATION = 'MDCChip:navigation',
+  ANIMATION = 'MDCChip:animation',
+}
+
+/**
+ * MDCChipAttributes provides the named constants for strings used by the
+ * foundation.
+ */
+export enum MDCChipAttributes {
+  DATA_REMOVED_ANNOUNCEMENT = 'data-mdc-removed-announcement',
+  DATA_ADDED_ANNOUNCEMENT = 'data-mdc-added-announcement',
+}
+
+/**
+ * MDCChipAnimation provides the names of runnable animations.
+ */
+export enum MDCChipAnimation {
+  ENTER = 'mdc-evolution-chip-enter',
+  EXIT = 'mdc-evolution-chip-exit',
+}

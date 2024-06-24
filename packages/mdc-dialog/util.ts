@@ -21,27 +21,44 @@
  * THE SOFTWARE.
  */
 
-import {default as createFocusTrap, FocusTarget, FocusTrap, Options} from 'focus-trap';
+import {FocusOptions, FocusTrap} from '@material/dom/focus-trap';
 
 export type MDCDialogFocusTrapFactory = (
-    element: HTMLElement | string,
-    userOptions?: Options,
-) => FocusTrap;
+    element: HTMLElement,
+    options: FocusOptions,
+    ) => FocusTrap;
 
 export function createFocusTrapInstance(
     surfaceEl: HTMLElement,
-    focusTrapFactory: MDCDialogFocusTrapFactory = createFocusTrap as unknown as MDCDialogFocusTrapFactory,
-    initialFocusEl?: FocusTarget,
-): FocusTrap {
-  return focusTrapFactory(surfaceEl, {
-    clickOutsideDeactivates: true, // Allow handling of scrim clicks.
-    escapeDeactivates: false, // Foundation handles ESC key.
-    initialFocus: initialFocusEl,
-  });
+    focusTrapFactory: MDCDialogFocusTrapFactory,
+    initialFocusEl?: HTMLElement,
+    ): FocusTrap {
+  return focusTrapFactory(surfaceEl, {initialFocusEl});
 }
 
-export function isScrollable(el: HTMLElement | null): boolean {
+export function isScrollable(el: HTMLElement|null): boolean {
   return el ? el.scrollHeight > el.offsetHeight : false;
+}
+
+/**
+ * For scrollable content, returns true if the content has not been scrolled
+ * (that is, the scroll content is as the "top"). This is used in full-screen
+ * dialogs, where the scroll divider is expected only to appear once the
+ * content has been scrolled "underneath" the header bar.
+ */
+export function isScrollAtTop(el: HTMLElement|null) {
+  return el ? el.scrollTop === 0 : false;
+}
+
+/**
+ * For scrollable content, returns true if the content has been scrolled all the
+ * way to the bottom. This is used in full-screen dialogs, where the footer
+ * scroll divider is expected only to appear when the content is "cut-off" by
+ * the footer bar.
+ */
+export function isScrollAtBottom(el: HTMLElement|null) {
+  return el ? Math.ceil(el.scrollHeight - el.scrollTop) === el.clientHeight :
+              false;
 }
 
 export function areTopsMisaligned(els: HTMLElement[]): boolean {

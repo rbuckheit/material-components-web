@@ -22,6 +22,7 @@
  */
 
 import {EventType, SpecificEventListener} from '@material/base/types';
+
 import {MDCTextFieldNativeInputElement} from './types';
 
 /**
@@ -32,11 +33,10 @@ import {MDCTextFieldNativeInputElement} from './types';
  * https://github.com/material-components/material-components-web/blob/master/docs/code/architecture.md
  */
 export interface MDCTextFieldAdapter extends MDCTextFieldRootAdapter,
-    MDCTextFieldInputAdapter,
-    MDCTextFieldLabelAdapter,
-    MDCTextFieldLineRippleAdapter,
-    MDCTextFieldOutlineAdapter {
-}
+                                             MDCTextFieldInputAdapter,
+                                             MDCTextFieldLabelAdapter,
+                                             MDCTextFieldLineRippleAdapter,
+                                             MDCTextFieldOutlineAdapter {}
 
 export interface MDCTextFieldRootAdapter {
   /**
@@ -57,18 +57,21 @@ export interface MDCTextFieldRootAdapter {
   /**
    * Registers an event handler on the root element for a given event.
    */
-  registerTextFieldInteractionHandler<K extends EventType>(evtType: K, handler: SpecificEventListener<K>): void;
+  registerTextFieldInteractionHandler<K extends EventType>(
+      eventType: K, handler: SpecificEventListener<K>): void;
 
   /**
    * Deregisters an event handler on the root element for a given event.
    */
-  deregisterTextFieldInteractionHandler<K extends EventType>(evtType: K, handler: SpecificEventListener<K>): void;
+  deregisterTextFieldInteractionHandler<K extends EventType>(
+      eventType: K, handler: SpecificEventListener<K>): void;
 
   /**
    * Registers a validation attribute change listener on the input element.
    * Handler accepts list of attribute names.
    */
-  registerValidationAttributeChangeHandler(handler: (attributeNames: string[]) => void): MutationObserver;
+  registerValidationAttributeChangeHandler(
+      handler: (attributeNames: string[]) => void): MutationObserver;
 
   /**
    * Disconnects a validation attribute observer on the input element.
@@ -79,24 +82,39 @@ export interface MDCTextFieldRootAdapter {
 export interface MDCTextFieldInputAdapter {
   /**
    * @return The native `<input>` element, or an object with the same shape.
-   * Note that this method can return null, which the foundation will handle gracefully.
+   * Note that this method can return null, which the foundation will handle
+   * gracefully.
    */
-  getNativeInput(): MDCTextFieldNativeInputElement | null;
+  getNativeInput(): MDCTextFieldNativeInputElement|null;
 
   /**
-   * @return true if the textfield is focused. We achieve this via `document.activeElement === this.root_`.
+   * Sets the specified attribute to the specified value on the input element.
+   */
+  setInputAttr(attr: string, value: string): void;
+
+  /**
+   * Removes the specified attribute from the input element.
+   */
+  removeInputAttr(attr: string): void;
+
+  /**
+   * @return true if the textfield is focused. We achieve this via
+   *     `document.activeElement === this.root`.
    */
   isFocused(): boolean;
 
   /**
    * Registers an event listener on the native input element for a given event.
    */
-  registerInputInteractionHandler<K extends EventType>(evtType: K, handler: SpecificEventListener<K>): void;
+  registerInputInteractionHandler<K extends EventType>(
+      eventType: K, handler: SpecificEventListener<K>): void;
 
   /**
-   * Deregisters an event listener on the native input element for a given event.
+   * Deregisters an event listener on the native input element for a given
+   * event.
    */
-  deregisterInputInteractionHandler<K extends EventType>(evtType: K, handler: SpecificEventListener<K>): void;
+  deregisterInputInteractionHandler<K extends EventType>(
+      eventType: K, handler: SpecificEventListener<K>): void;
 }
 
 export interface MDCTextFieldLabelAdapter {
@@ -122,6 +140,12 @@ export interface MDCTextFieldLabelAdapter {
    * @return width of label in pixels.
    */
   getLabelWidth(): number;
+
+  /**
+   * Only implement if label exists.
+   * Styles the label as required.
+   */
+  setLabelRequired(isRequired: boolean): void;
 }
 
 export interface MDCTextFieldLineRippleAdapter {

@@ -24,15 +24,22 @@
 import {MDCComponent} from '@material/base/component';
 import {applyPassive} from '@material/dom/events';
 import {matches} from '@material/dom/ponyfill';
+
 import {MDCRippleAdapter} from './adapter';
 import {MDCRippleFoundation} from './foundation';
 import {MDCRippleAttachOpts, MDCRippleCapableSurface} from './types';
 import * as util from './util';
 
-export type MDCRippleFactory = (el: Element, foundation?: MDCRippleFoundation) => MDCRipple;
+/** MDC Ripple Factory */
+export type MDCRippleFactory =
+    (el: HTMLElement, foundation?: MDCRippleFoundation) => MDCRipple;
 
-export class MDCRipple extends MDCComponent<MDCRippleFoundation> implements MDCRippleCapableSurface {
-  static attachTo(root: Element, opts: MDCRippleAttachOpts = {isUnbounded: undefined}): MDCRipple {
+/** MDC Ripple */
+export class MDCRipple extends MDCComponent<MDCRippleFoundation> implements
+    MDCRippleCapableSurface {
+  static override attachTo(root: HTMLElement, opts: MDCRippleAttachOpts = {
+    isUnbounded: undefined
+  }): MDCRipple {
     const ripple = new MDCRipple(root);
     // Only override unbounded behavior if option is explicitly specified
     if (opts.isUnbounded !== undefined) {
@@ -43,64 +50,78 @@ export class MDCRipple extends MDCComponent<MDCRippleFoundation> implements MDCR
 
   static createAdapter(instance: MDCRippleCapableSurface): MDCRippleAdapter {
     return {
-      addClass: (className) => instance.root_.classList.add(className),
+      addClass: (className) => {
+        instance.root.classList.add(className);
+      },
       browserSupportsCssVars: () => util.supportsCssVariables(window),
-      computeBoundingRect: () => instance.root_.getBoundingClientRect(),
-      containsEventTarget: (target) => instance.root_.contains(target as Node),
-      deregisterDocumentInteractionHandler: (evtType, handler) =>
-          document.documentElement.removeEventListener(evtType, handler, applyPassive()),
-      deregisterInteractionHandler: (evtType, handler) =>
-          (instance.root_ as HTMLElement).removeEventListener(evtType, handler, applyPassive()),
-      deregisterResizeHandler: (handler) => window.removeEventListener('resize', handler),
-      getWindowPageOffset: () => ({x: window.pageXOffset, y: window.pageYOffset}),
-      isSurfaceActive: () => matches(instance.root_, ':active'),
+      computeBoundingRect: () => instance.root.getBoundingClientRect(),
+      containsEventTarget: (target) => instance.root.contains(target as Node),
+      deregisterDocumentInteractionHandler: (eventType, handler) => {
+        document.documentElement.removeEventListener(
+            eventType, handler, applyPassive());
+      },
+      deregisterInteractionHandler: (eventType, handler) => {
+        instance.root.removeEventListener(eventType, handler, applyPassive());
+      },
+      deregisterResizeHandler: (handler) => {
+        window.removeEventListener('resize', handler);
+      },
+      getWindowPageOffset: () =>
+          ({x: window.pageXOffset, y: window.pageYOffset}),
+      isSurfaceActive: () => matches(instance.root, ':active'),
       isSurfaceDisabled: () => Boolean(instance.disabled),
       isUnbounded: () => Boolean(instance.unbounded),
-      registerDocumentInteractionHandler: (evtType, handler) =>
-          document.documentElement.addEventListener(evtType, handler, applyPassive()),
-      registerInteractionHandler: (evtType, handler) =>
-        (instance.root_ as HTMLElement).addEventListener(evtType, handler, applyPassive()),
-      registerResizeHandler: (handler) => window.addEventListener('resize', handler),
-      removeClass: (className) => instance.root_.classList.remove(className),
-      updateCssVariable: (varName, value) => (instance.root_ as HTMLElement).style.setProperty(varName, value),
+      registerDocumentInteractionHandler: (eventType, handler) => {
+        document.documentElement.addEventListener(
+            eventType, handler, applyPassive());
+      },
+      registerInteractionHandler: (eventType, handler) => {
+        instance.root.addEventListener(eventType, handler, applyPassive());
+      },
+      registerResizeHandler: (handler) => {
+        window.addEventListener('resize', handler);
+      },
+      removeClass: (className) => {
+        instance.root.classList.remove(className);
+      },
+      updateCssVariable: (varName, value) => {
+        instance.root.style.setProperty(varName, value);
+      },
     };
   }
 
-  // Public visibility for this property is required by MDCRippleCapableSurface.
-  root_!: Element; // assigned in MDCComponent constructor
-
   disabled = false;
 
-  private unbounded_?: boolean;
+  private isUnbounded?: boolean;
 
   get unbounded(): boolean {
-    return Boolean(this.unbounded_);
+    return Boolean(this.isUnbounded);
   }
 
   set unbounded(unbounded: boolean) {
-    this.unbounded_ = Boolean(unbounded);
-    this.setUnbounded_();
+    this.isUnbounded = Boolean(unbounded);
+    this.setUnbounded();
   }
 
   activate() {
-    this.foundation_.activate();
+    this.foundation.activate();
   }
 
   deactivate() {
-    this.foundation_.deactivate();
+    this.foundation.deactivate();
   }
 
   layout() {
-    this.foundation_.layout();
+    this.foundation.layout();
   }
 
-  getDefaultFoundation() {
+  override getDefaultFoundation() {
     return new MDCRippleFoundation(MDCRipple.createAdapter(this));
   }
 
-  initialSyncWithDOM() {
-    const root = this.root_ as HTMLElement;
-    this.unbounded = 'mdcRippleIsUnbounded' in root.dataset;
+  override initialSyncWithDOM() {
+    const root = this.root;
+    this.isUnbounded = 'mdcRippleIsUnbounded' in root.dataset;
   }
 
   /**
@@ -109,7 +130,7 @@ export class MDCRipple extends MDCComponent<MDCRippleFoundation> implements MDCR
    * By accessing the protected property inside a method, we solve that problem.
    * That's why this function exists.
    */
-  private setUnbounded_() {
-    this.foundation_.setUnbounded(Boolean(this.unbounded_));
+  private setUnbounded() {
+    this.foundation.setUnbounded(Boolean(this.isUnbounded));
   }
 }

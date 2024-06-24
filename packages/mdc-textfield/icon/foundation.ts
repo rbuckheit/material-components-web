@@ -23,26 +23,30 @@
 
 import {MDCFoundation} from '@material/base/foundation';
 import {SpecificEventListener} from '@material/base/types';
+
 import {MDCTextFieldIconAdapter} from './adapter';
 import {cssClasses, strings} from './constants';
 
-type InteractionEventType = 'click' | 'keydown';
+type InteractionEventType = 'click'|'keydown';
 
 const INTERACTION_EVENTS: InteractionEventType[] = ['click', 'keydown'];
 
-export class MDCTextFieldIconFoundation extends MDCFoundation<MDCTextFieldIconAdapter> {
-  static get strings() {
+/** MDC Text Field Icon Foundation */
+export class MDCTextFieldIconFoundation extends
+    MDCFoundation<MDCTextFieldIconAdapter> {
+  static override get strings() {
     return strings;
   }
 
-  static get cssClasses() {
+  static override get cssClasses() {
     return cssClasses;
   }
 
   /**
-   * See {@link MDCTextFieldIconAdapter} for typing information on parameters and return types.
+   * See {@link MDCTextFieldIconAdapter} for typing information on parameters
+   * and return types.
    */
-  static get defaultAdapter(): MDCTextFieldIconAdapter {
+  static override get defaultAdapter(): MDCTextFieldIconAdapter {
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     return {
       getAttr: () => null,
@@ -56,55 +60,63 @@ export class MDCTextFieldIconFoundation extends MDCFoundation<MDCTextFieldIconAd
     // tslint:enable:object-literal-sort-keys
   }
 
-  private savedTabIndex_: string | null = null;
-  private readonly interactionHandler_: SpecificEventListener<InteractionEventType>;
+  private savedTabIndex: string|null = null;
+  private readonly interactionHandler:
+      SpecificEventListener<InteractionEventType>;
 
   constructor(adapter?: Partial<MDCTextFieldIconAdapter>) {
     super({...MDCTextFieldIconFoundation.defaultAdapter, ...adapter});
 
-    this.interactionHandler_ = (evt) => this.handleInteraction(evt);
+    this.interactionHandler = (event) => {
+      this.handleInteraction(event);
+    };
   }
 
-  init() {
-    this.savedTabIndex_ = this.adapter_.getAttr('tabindex');
+  override init() {
+    this.savedTabIndex = this.adapter.getAttr('tabindex');
 
-    INTERACTION_EVENTS.forEach((evtType) => {
-      this.adapter_.registerInteractionHandler(evtType, this.interactionHandler_);
-    });
+    for (const eventType of INTERACTION_EVENTS) {
+      this.adapter.registerInteractionHandler(eventType, this.interactionHandler);
+    }
   }
 
-  destroy() {
-    INTERACTION_EVENTS.forEach((evtType) => {
-      this.adapter_.deregisterInteractionHandler(evtType, this.interactionHandler_);
-    });
+  override destroy() {
+    for (const eventType of INTERACTION_EVENTS) {
+      this.adapter.deregisterInteractionHandler(
+          eventType, this.interactionHandler);
+    }
   }
 
   setDisabled(disabled: boolean) {
-    if (!this.savedTabIndex_) {
+    if (!this.savedTabIndex) {
       return;
     }
 
     if (disabled) {
-      this.adapter_.setAttr('tabindex', '-1');
-      this.adapter_.removeAttr('role');
+      this.adapter.setAttr('tabindex', '-1');
+      this.adapter.removeAttr('role');
     } else {
-      this.adapter_.setAttr('tabindex', this.savedTabIndex_);
-      this.adapter_.setAttr('role', strings.ICON_ROLE);
+      this.adapter.setAttr('tabindex', this.savedTabIndex);
+      this.adapter.setAttr('role', strings.ICON_ROLE);
     }
   }
 
   setAriaLabel(label: string) {
-    this.adapter_.setAttr('aria-label', label);
+    this.adapter.setAttr('aria-label', label);
   }
 
   setContent(content: string) {
-    this.adapter_.setContent(content);
+    this.adapter.setContent(content);
   }
 
-  handleInteraction(evt: MouseEvent | KeyboardEvent) {
-    const isEnterKey = (evt as KeyboardEvent).key === 'Enter' || (evt as KeyboardEvent).keyCode === 13;
-    if (evt.type === 'click' || isEnterKey) {
-      this.adapter_.notifyIconAction();
+  handleInteraction(event: MouseEvent|KeyboardEvent) {
+    const isEnterKey = (event as KeyboardEvent).key === 'Enter' ||
+        (event as KeyboardEvent).keyCode === 13;
+    const isSpaceKey = (event as KeyboardEvent).key === ' ';
+    if (event.type === 'click' || isEnterKey || isSpaceKey) {
+      event.preventDefault();  // stop click from causing host label to focus
+                             // input
+      this.adapter.notifyIconAction();
     }
   }
 }

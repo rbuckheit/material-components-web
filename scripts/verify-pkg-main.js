@@ -75,7 +75,7 @@ function logError(message) {
 if (!isValidCwd) {
   console.error(
     'Invalid CWD. Please ensure you are running this from the root of the repo, and that you have run ' +
-    '`npm run dist` and `node scripts/cp-pkgs.js`'
+    '`npm run dist` and `node scripts/cp-pkgs.js`',
   );
   process.exit(1);
 }
@@ -90,7 +90,9 @@ globSync('packages/*/package.json').forEach((jsonPath) => {
   }
   verifyPath(packageJson, jsonPath, 'main');
   verifyPath(packageJson, jsonPath, 'module');
-  verifyPath(packageJson, jsonPath, 'types');
+  if (jsonPath.includes('material-components-web')) {
+    verifyPath(packageJson, jsonPath, 'types');
+  }
 });
 
 if (invalidMains > 0 || invalidModules > 0 || invalidTypes > 0) {

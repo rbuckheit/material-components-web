@@ -112,22 +112,22 @@ class RedblueTogglePrototype {
 
   constructor(root) {
     this.root = root;
-    this.clickHandler_ = () => this.toggle();
+    this.clickHandler = () => this.toggle();
     this.initialize();
   }
 
   initialize() {
-    this.root.addEventListener('click', this.clickHandler_);
+    this.root.addEventListener('click', this.clickHandler);
   }
 
   destroy() {
-    this.root.removeEventListener('click', this.clickHandler_);
+    this.root.removeEventListener('click', this.clickHandler);
   }
 
   toggle(isToggled = undefined) {
     const wasToggledExplicitlySet = isToggled === Boolean(isToggled);
     const toggled = wasToggledExplicitlySet ? isToggled : !this.toggled;
-    const toggleColorEl = this.root.querySelector('.redblue-toggle__color');
+    const toggleColorEl = this.root.querySelector<HTMLElement>('.redblue-toggle__color');
     let toggleColor;
 
     this.root.setAttribute('aria-pressed', String(toggled));
@@ -142,7 +142,7 @@ class RedblueTogglePrototype {
   }
 }
 
-new RedblueTogglePrototype(document.querySelector('.redblue-toggle'));
+new RedblueTogglePrototype(document.querySelector<HTMLElement>('.redblue-toggle'));
 ```
 
 Note how the JS Component does not reference MDC Web in any way, nor does it have any notion
@@ -191,16 +191,16 @@ class RedblueTogglePrototype {
 
   constructor(root) {
     this.root = root;
-    this.clickHandler_ = () => this.toggle();
+    this.clickHandler = () => this.toggle();
     this.initialize();
   }
 
   initialize() {
-    this.root.addEventListener('click', this.clickHandler_);
+    this.root.addEventListener('click', this.clickHandler);
   }
 
   destroy() {
-    this.root.removeEventListener('click', this.clickHandler_);
+    this.root.removeEventListener('click', this.clickHandler);
   }
 
   toggle(isToggled = undefined) {
@@ -262,35 +262,35 @@ class RedblueToggleFoundation extends MDCFoundation {
     };
   }
 
-  private toggled_ = false;
+  private toggled = false;
 
   constructor(adapter) {
     super({...RedblueToggleFoundation.defaultAdapter, ...adapter});
   }
 
   handleClick() {
-    this.toggle_();
+    this.toggle();
   }
 
   isToggled() {
-    return this.adapter_.getAttr('aria-pressed') === 'true';
+    return this.adapter.getAttr('aria-pressed') === 'true';
   }
 
-  private toggle_(isToggled = undefined) {
+  private toggle(isToggled = undefined) {
     const wasToggledExplicitlySet = isToggled === Boolean(isToggled);
-    this.toggled_ = wasToggledExplicitlySet ? isToggled : !this.toggled_;
+    this.toggled = wasToggledExplicitlySet ? isToggled : !this.toggled;
 
     let toggleColor;
 
-    this.adapter_.setAttr('aria-pressed', String(this.toggled_));
-    if (this.toggled_) {
+    this.adapter.setAttr('aria-pressed', String(this.toggled));
+    if (this.toggled) {
       toggleColor = 'Red';
-      this.adapter_.addClass('redblue-toggle--toggled');
+      this.adapter.addClass('redblue-toggle--toggled');
     } else {
       toggleColor = 'Blue';
-      this.adapter_.removeClass('redblue-toggle--toggled');
+      this.adapter.removeClass('redblue-toggle--toggled');
     }
-    this.adapter_.setToggleColorTextContent(toggleColor);
+    this.adapter.setToggleColorTextContent(toggleColor);
   }
 }
 ```
@@ -313,29 +313,29 @@ adapter is extremely straightforward as we can simply repurpose the methods we s
 ```ts
 class RedblueToggle extends MDCComponent {
   initialize() {
-    this.listen('click', this.foundation_.handleClick);
+    this.listen('click', this.foundation.handleClick);
   }
 
   destroy() {
-    this.unlisten('click', this.foundation_.handleClick);
+    this.unlisten('click', this.foundation.handleClick);
   }
 
   get toggled() {
-    return this.foundation_.isToggled();
+    return this.foundation.isToggled();
   }
 
   set toggled(toggled) {
-    this.foundation_.toggle(toggled);
+    this.foundation.toggle(toggled);
   }
 
   getDefaultFoundation() {
     return new RedblueToggleFoundation({
-      getAttr: attr => this.root_.getAttribute(attr),
-      setAttr: (attr, value) => this.root_.setAttribute(attr, value),
-      addClass: className => this.root_.classList.add(className),
-      removeClass: className => this.root_.classList.remove(className),
+      getAttr: attr => this.root.getAttribute(attr),
+      setAttr: (attr, value) => this.root.setAttribute(attr, value),
+      addClass: className => this.root.classList.add(className),
+      removeClass: className => this.root.classList.remove(className),
       setToggleColorTextContent: textContent => {
-        this.root_.querySelector('.redblue-toggle__color').textContent = textContent;
+        this.root.querySelector<HTMLElement>('.redblue-toggle__color').textContent = textContent;
       },
     });
   }
@@ -465,14 +465,17 @@ energy nitpicking on pull requests.
 
 ### File Structure
 
-All source files for a component reside under `packages/`. All test files reside under `test/unit`,
-which mirrors the `packages/` directory. Screenshot tests for packages reside under `test/screenshot/spec`.
+- Source files: Reside under `packages/`.
+- Test files: Reside under `packages/<mdc-component>/test/`.
 
 A typical component within our codebase looks like so:
 
 ```
-packages
-  ├── mdc-component
+packages/
+  ├── mdc-component/
+      ├── test/
+          ├── foundation.test.ts # Unit tests for the component's foundation
+          ├── mdc-component.test.ts # Unit tests for the component
       ├── README.md # Usage instructions and API documentation
       ├── adapter.ts # Adapter interface implemented by framework wrappers and the vanilla component
       ├── foundation.ts # Framework-agnostic business logic used by wrapper libraries and the vanilla component
@@ -483,17 +486,6 @@ packages
       ├── util.ts # (optional) Framework-agnostic helper functions (e.g., feature detection)
       ├── mdc-component.scss # The main source file for the component's CSS
       └── package.json # The components package file
-test/unit
-  ├── mdc-component
-      ├── foundation.test.js # Unit tests for the component's foundation
-      ├── mdc-component.test.js # Unit tests for the component's
-test/screenshot
-  ├── spec
-      ├── mdc-component
-          ├── classes
-              ├── baseline.html # component usage in the happy path case. Other variants would go under ./classes.
-          ├── mixins
-              ├── ink-color.html # component using a sass mixin for customization.
 ```
 
 **Every component _must_ have these files before we will accept a PR for them.**
@@ -573,7 +565,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-Please put this in a comment at the top of every source file, replacing <YEAR> with the year the file was created.
+Please put this in a comment at the top of every source file, replacing `<YEAR>` with the year the file was created.
 
 ### Scss
 
@@ -775,31 +767,22 @@ conventions, examples, and common TypeScript patterns you may not be used to, in
 ### Testing
 
 The following guidelines should be used to help write tests for MDC Web code. Our tests are written
-using [mocha](https://mochajs.org/) with the [qunit UI](https://mochajs.org/#qunit), and are driven by [karma](https://karma-runner.github.io/1.0/index.html). We use the [chai assert API](http://chaijs.com/api/assert/)
-for assertions, and [testdouble](https://github.com/testdouble/testdouble.js/) for mocking and stubbing.
+using the [Jasmine](https://jasmine.github.io/) testing framework and are driven by [Karma](https://karma-runner.github.io/1.0/index.html).
 
 #### Verify foundation's adapters
 When testing foundations, ensure that at least one of your test cases uses the
-`verifyDefaultAdapter` method defined with our [foundation helpers](../test/unit/helpers/foundation.js). This is done to ensure that adapter interfaces do not
+`verifyDefaultAdapter` method defined with our [foundation helpers](../testing/helpers/foundation.ts). This is done to ensure that adapter interfaces do not
 change unexpectedly.
 
 #### Use helper methods
-We have helper modules within [test/unit/helpers](../test/unit/helpers) for things like
+We have helper modules within [testing/helpers](../testing/helpers) for things like
 bootstrapping foundation tests, intercepting adapter methods used for listening to events, and
 dealing with `requestAnimationFrame`. We encourage you to make use of them in your code to make it
 as easy as possible to write tests!
 
-#### Use bel for DOM fixture
-We use the [bel](https://www.npmjs.com/package/bel) library to generate fixtures for our component/adapter tests. We've found it to
-be an easy and successful way to bootstrap fixtures without having to worry about maintaining HTML
-files or write unwieldy DOM API code.
+#### Use `getFixture` for DOM fixture
+To generate fixtures for component/adapter tests, use the [#getFixture](../testing/dom/index.ts) helper.
 
 #### Always clean up the DOM after every test
 This is important. _Before a test ends, ensure that any elements attached to the DOM have been
 removed_.
-
-#### Verify adapters via testdouble.
-We use [testdouble.js](https://github.com/testdouble/testdouble.js) as our de-facto mocking
-framework. A huge benefit to the component/foundation/adapter pattern is it makes testing the
-functionality of our components extremely easy. We encourage you to make use of testdouble stubs for
-adapters and use them to verify your foundation's behavior (note that this is what [our foundation setup code](../test/unit/helpers/setup.js#L21) does by default).

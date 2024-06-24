@@ -22,24 +22,34 @@
  */
 
 import {MDCFoundation} from '@material/base/foundation';
+
 import {MDCIconButtonToggleAdapter} from './adapter';
 import {cssClasses, strings} from './constants';
 
-export class MDCIconButtonToggleFoundation extends MDCFoundation<MDCIconButtonToggleAdapter> {
-  static get cssClasses() {
+/** MDC Icon Button Toggle Foundation */
+export class MDCIconButtonToggleFoundation extends
+    MDCFoundation<MDCIconButtonToggleAdapter> {
+  /**
+   * Whether the icon button has an aria-label that changes depending on
+   * toggled state.
+   */
+  private hasToggledAriaLabel = false;
+
+  static override get cssClasses() {
     return cssClasses;
   }
 
-  static get strings() {
+  static override get strings() {
     return strings;
   }
 
-  static get defaultAdapter(): MDCIconButtonToggleAdapter {
+  static override get defaultAdapter(): MDCIconButtonToggleAdapter {
     return {
       addClass: () => undefined,
       hasClass: () => false,
       notifyChange: () => undefined,
       removeClass: () => undefined,
+      getAttr: () => null,
       setAttr: () => undefined,
     };
   }
@@ -48,27 +58,48 @@ export class MDCIconButtonToggleFoundation extends MDCFoundation<MDCIconButtonTo
     super({...MDCIconButtonToggleFoundation.defaultAdapter, ...adapter});
   }
 
-  init() {
-    this.adapter_.setAttr(strings.ARIA_PRESSED, `${this.isOn()}`);
+  override init() {
+    const ariaLabelOn = this.adapter.getAttr(strings.DATA_ARIA_LABEL_ON);
+    const ariaLabelOff = this.adapter.getAttr(strings.DATA_ARIA_LABEL_OFF);
+    if (ariaLabelOn && ariaLabelOff) {
+      if (this.adapter.getAttr(strings.ARIA_PRESSED) !== null) {
+        throw new Error(
+            'MDCIconButtonToggleFoundation: Button should not set ' +
+            '`aria-pressed` if it has a toggled ARIA label.');
+      }
+
+      this.hasToggledAriaLabel = true;
+    } else {
+      this.adapter.setAttr(strings.ARIA_PRESSED, String(this.isOn()));
+    }
   }
 
   handleClick() {
     this.toggle();
-    this.adapter_.notifyChange({isOn: this.isOn()});
+    this.adapter.notifyChange({isOn: this.isOn()});
   }
 
   isOn(): boolean {
-    return this.adapter_.hasClass(cssClasses.ICON_BUTTON_ON);
+    return this.adapter.hasClass(cssClasses.ICON_BUTTON_ON);
   }
 
   toggle(isOn: boolean = !this.isOn()) {
+    // Toggle UI based on state.
     if (isOn) {
-      this.adapter_.addClass(cssClasses.ICON_BUTTON_ON);
+      this.adapter.addClass(cssClasses.ICON_BUTTON_ON);
     } else {
-      this.adapter_.removeClass(cssClasses.ICON_BUTTON_ON);
+      this.adapter.removeClass(cssClasses.ICON_BUTTON_ON);
     }
 
-    this.adapter_.setAttr(strings.ARIA_PRESSED, `${isOn}`);
+    // Toggle aria attributes based on state.
+    if (this.hasToggledAriaLabel) {
+      const ariaLabel = isOn ?
+          this.adapter.getAttr(strings.DATA_ARIA_LABEL_ON) :
+          this.adapter.getAttr(strings.DATA_ARIA_LABEL_OFF);
+      this.adapter.setAttr(strings.ARIA_LABEL, ariaLabel || '');
+    } else {
+      this.adapter.setAttr(strings.ARIA_PRESSED, `${isOn}`);
+    }
   }
 }
 

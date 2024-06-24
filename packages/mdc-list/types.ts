@@ -32,4 +32,23 @@ export interface MDCListActionEvent extends Event {
   detail: MDCListActionEventDetail;
 }
 
-export type MDCListIndex = number | number[];
+
+export interface MDCListSelectionChangeDetail {
+  /** Indices of the list items for which the selection changed. */
+  changedIndices: number[];
+}
+
+export interface MDCListSelectionChangeEvent extends Event {
+  detail: MDCListSelectionChangeDetail;
+}
+
+export type MDCListIndex = number|number[];
+
+/**
+ * Type used by the typeahead mechanism to keep track of the index associated
+ * with list item text.
+ */
+export interface MDCListTextAndIndex {
+  text: string;
+  index: number;
+}

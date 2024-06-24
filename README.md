@@ -1,15 +1,12 @@
 [![Version](https://img.shields.io/npm/v/material-components-web.svg)](https://www.npmjs.com/package/material-components-web)
-[![Build Status](https://travis-ci.com/material-components/material-components-web.svg?branch=master)](https://travis-ci.com/material-components/material-components-web/)
-[![codecov](https://codecov.io/gh/material-components/material-components-web/branch/master/graph/badge.svg)](https://codecov.io/gh/material-components/material-components-web)
 [![Chat](https://img.shields.io/discord/259087343246508035.svg)](https://discord.gg/material-components)
-[![Screenshots](https://us-central1-material-components-web.cloudfunctions.net/screenshot-shield-svg)](https://us-central1-material-components-web.cloudfunctions.net/screenshot-shield-url)
 
 # Material Components for the web
 
-Material Components for the web (MDC Web) helps developers execute [Material Design](https://www.material.io).
+Material Components for the web helps developers execute [Material Design](https://www.material.io).
 Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional web projects.
 
-MDC Web strives to seamlessly incorporate into a wider range of usage contexts, from simple static websites to complex, JavaScript-heavy applications to hybrid client/server rendering systems. In short, whether you're already heavily invested in another framework or not, it should be easy to incorporate Material Components into your site in a lightweight, idiomatic fashion.
+Material Web strives to seamlessly incorporate into a wider range of usage contexts, from simple static websites to complex, JavaScript-heavy applications to hybrid client/server rendering systems. In short, whether you're already heavily invested in another framework or not, it should be easy to incorporate Material Components into your site in a lightweight, idiomatic fashion.
 
 Material Components for the web is the successor to [Material Design Lite](https://getmdl.io/). In addition to implementing the [Material Design guidelines](https://material.io/design), it provides more flexible theming customization, not only in terms of color, but also typography, shape, states, and more. It is also specifically [architected](docs/code/architecture.md) for adaptability to various [major web frameworks](docs/framework-wrappers.md).
 
@@ -21,36 +18,36 @@ Material Components for the web is the successor to [Material Design Lite](https
 ## Important links
 
 - [Getting Started Guide](docs/getting-started.md)
-- [Demos](https://material-components.github.io/material-components-web-catalog)
-- [MDC Web on other frameworks](docs/framework-wrappers.md)
-- [Examples using MDC Web](docs/examples.md)
+- [Demos](https://material-components.github.io/material-components-web-catalog) (external site)
+- [Material on other frameworks](docs/framework-wrappers.md)
+- [Examples using Material Web](docs/examples.md)
 - [Contributing](CONTRIBUTING.md)
 - [Material Design Guidelines](https://material.io/design) (external site)
 - [Supported browsers](docs/supported-browsers.md)
 - [All Components](packages/)
 - [Changelog](./CHANGELOG.md)
-- [Roadmap](./ROADMAP.md)
 
 ## Quick start
 
 ### Using via CDN
 
 ```html
-<!-- Required styles for MDC Web -->
+<!-- Required styles for Material Web -->
 <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
 
 <!-- Render textfield component -->
-<div class="mdc-text-field">
-  <input type="text" id="my-text-field" class="mdc-text-field__input">
-  <label class="mdc-floating-label" for="my-text-field">Label</label>
-  <div class="mdc-line-ripple"></div>
-</div>
+<label class="mdc-text-field mdc-text-field--filled">
+  <span class="mdc-text-field__ripple"></span>
+  <span class="mdc-floating-label" id="my-label">Label</span>
+  <input type="text" class="mdc-text-field__input" aria-labelledby="my-label">
+  <span class="mdc-line-ripple"></span>
+</label>
 
-<!-- Required MDC Web JavaScript library -->
+<!-- Required Material Web JavaScript library -->
 <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 <!-- Instantiate single textfield component rendered in the document -->
 <script>
-  mdc.textField.MDCTextField.attachTo(document.querySelector('.mdc-text-field'));
+  mdc.textField.MDCTextField.attachTo(document.querySelector<HTMLElement>('.mdc-text-field'));
 </script>
 ```
 
@@ -68,14 +65,15 @@ npm install @material/textfield
 
 #### HTML
 
-Sample usage of text field component. Please see [MDC Textfield](packages/mdc-textfield) component page for more options.
+Sample usage of text field component. Please see [Textfield](packages/mdc-textfield) component page for more options.
 
 ```html
-<div class="mdc-text-field">
-  <input type="text" id="my-text-field" class="mdc-text-field__input">
-  <label class="mdc-floating-label" for="my-text-field">Label</label>
-  <div class="mdc-line-ripple"></div>
-</div>
+<label class="mdc-text-field mdc-text-field--filled">
+  <span class="mdc-text-field__ripple"></span>
+  <input type="text" class="mdc-text-field__input" aria-labelledby="my-label">
+  <span class="mdc-floating-label" id="my-label">Label</span>
+  <span class="mdc-line-ripple"></span>
+</label>
 ```
 
 #### CSS
@@ -83,7 +81,13 @@ Sample usage of text field component. Please see [MDC Textfield](packages/mdc-te
 Load styles required for text field component.
 
 ```scss
-@import "@material/textfield/mdc-text-field";
+@use "@material/floating-label/mdc-floating-label";
+@use "@material/line-ripple/mdc-line-ripple";
+@use "@material/notched-outline/mdc-notched-outline";
+@use "@material/textfield";
+
+@include textfield.core-styles;
+
 ```
 
 #### JavaScript
@@ -91,24 +95,14 @@ Load styles required for text field component.
 Import `MDCTextField` module to instantiate text field component.
 
 ```js
-import {MDCTextField} from '@material/textfield/index';
-const textField = new MDCTextField(document.querySelector('.mdc-text-field'));
+import {MDCTextField} from '@material/textfield';
+const textField = new MDCTextField(document.querySelector<HTMLElement>('.mdc-text-field'));
 ```
 
 This'll initialize text field component on a single `.mdc-text-field` element.
 
-> Please see [quick start demo](https://glitch.com/~mdc-web-quick-start) on glitch for full example.
+> Please see [quick start demo](https://glitch.com/edit/#!/remix/new-web) on glitch for full example.
 
 ## Need help?
 
 We're constantly trying to improve our components. If Github Issues don't fit your needs, then please visit us on our [Discord Channel](https://discord.gg/material-components).
-
-## Thank you
-
-Third-party services that we use and are thankful to:
-
-- [Travis CI](https://travis-ci.com/) for CI.
-- [Sauce Labs](https://saucelabs.com/) for unit testing.
-- [CrossBrowserTesting](https://crossbrowsertesting.com/) for [screenshot testing](test/screenshot/).
-
-<a href="https://crossbrowsertesting.com/"><img src="test/screenshot/static/images/cbt-logo.png" alt="CrossBrowserTesting logo" width="180" /></a>

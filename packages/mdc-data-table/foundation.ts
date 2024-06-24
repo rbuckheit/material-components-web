@@ -22,31 +22,51 @@
  */
 
 import {MDCFoundation} from '@material/base/foundation';
-import {MDCDataTableAdapter} from './adapter';
-import {cssClasses, strings} from './constants';
 
+import {MDCDataTableAdapter} from './adapter';
+import {cssClasses, SortValue, attributes} from './constants';
+import {RowClickEventData, SortActionEventData} from './types';
+
+/**
+ * The Foundation of data table component containing pure business logic, any
+ * logic requiring DOM manipulation are delegated to adapter methods.
+ */
 export class MDCDataTableFoundation extends MDCFoundation<MDCDataTableAdapter> {
-  static get defaultAdapter(): MDCDataTableAdapter {
+  static override get defaultAdapter(): MDCDataTableAdapter {
     return {
+      addClass: () => undefined,
       addClassAtRowIndex: () => undefined,
+      getAttributeByHeaderCellIndex: () => '',
+      getHeaderCellCount: () => 0,
+      getHeaderCellElements: () => [],
       getRowCount: () => 0,
       getRowElements: () => [],
       getRowIdAtIndex: () => '',
       getRowIndexByChildElement: () => 0,
       getSelectedRowCount: () => 0,
+      getTableContainerHeight: () => 0,
+      getTableHeaderHeight: () => 0,
       isCheckboxAtRowIndexChecked: () => false,
       isHeaderRowCheckboxChecked: () => false,
       isRowsSelectable: () => false,
       notifyRowSelectionChanged: () => undefined,
       notifySelectedAll: () => undefined,
+      notifySortAction: () => undefined,
       notifyUnselectedAll: () => undefined,
+      notifyRowClick: () => undefined,
       registerHeaderRowCheckbox: () => undefined,
       registerRowCheckboxes: () => undefined,
+      removeClass: () => undefined,
       removeClassAtRowIndex: () => undefined,
+      removeClassNameByHeaderCellIndex: () => undefined,
       setAttributeAtRowIndex: () => undefined,
+      setAttributeByHeaderCellIndex: () => undefined,
+      setClassNameByHeaderCellIndex: () => undefined,
       setHeaderRowCheckboxChecked: () => undefined,
       setHeaderRowCheckboxIndeterminate: () => undefined,
+      setProgressIndicatorStyles: () => undefined,
       setRowCheckboxCheckedAtIndex: () => undefined,
+      setSortStatusLabelByHeaderCellIndex: () => undefined,
     };
   }
 
@@ -55,36 +75,45 @@ export class MDCDataTableFoundation extends MDCFoundation<MDCDataTableAdapter> {
   }
 
   /**
-   * Re-initializes header row checkbox and row checkboxes when selectable rows are added or removed from table.
-   * Use this if registering checkbox is synchronous.
+   * Re-initializes header row checkbox and row checkboxes when selectable rows
+   * are added or removed from table. Use this if registering checkbox is
+   * synchronous.
    */
   layout() {
-    if (this.adapter_.isRowsSelectable()) {
-      this.adapter_.registerHeaderRowCheckbox();
-      this.adapter_.registerRowCheckboxes();
+    if (this.adapter.isRowsSelectable()) {
+      this.adapter.registerHeaderRowCheckbox();
+      this.adapter.registerRowCheckboxes();
 
-      this.setHeaderRowCheckboxState_();
+      this.setHeaderRowCheckboxState();
     }
   }
 
   /**
-   * Re-initializes header row checkbox and row checkboxes when selectable rows are added or removed from table.
-   * Use this if registering checkbox is asynchronous.
+   * Re-initializes header row checkbox and row checkboxes when selectable rows
+   * are added or removed from table. Use this if registering checkbox is
+   * asynchronous.
    */
   async layoutAsync(): Promise<void> {
-    if (this.adapter_.isRowsSelectable()) {
-      await this.adapter_.registerHeaderRowCheckbox();
-      await this.adapter_.registerRowCheckboxes();
+    if (this.adapter.isRowsSelectable()) {
+      await this.adapter.registerHeaderRowCheckbox();
+      await this.adapter.registerRowCheckboxes();
 
-      this.setHeaderRowCheckboxState_();
+      this.setHeaderRowCheckboxState();
     }
   }
 
   /**
    * @return Returns array of row elements.
    */
-  getRows(): Element[] {
-    return this.adapter_.getRowElements();
+  getRows(): HTMLElement[] {
+    return this.adapter.getRowElements();
+  }
+
+  /**
+   * @return Array of header cell elements.
+   */
+  getHeaderCells(): Element[] {
+    return this.adapter.getHeaderCellElements();
   }
 
   /**
@@ -92,19 +121,31 @@ export class MDCDataTableFoundation extends MDCFoundation<MDCDataTableAdapter> {
    * @param rowIds Array of row ids that needs to be selected.
    */
   setSelectedRowIds(rowIds: string[]) {
-    for (let rowIndex = 0; rowIndex < this.adapter_.getRowCount(); rowIndex++) {
-      const rowId = this.adapter_.getRowIdAtIndex(rowIndex);
+    for (let rowIndex = 0; rowIndex < this.adapter.getRowCount(); rowIndex++) {
+      const rowId = this.adapter.getRowIdAtIndex(rowIndex);
 
       let isSelected = false;
       if (rowId && rowIds.indexOf(rowId) >= 0) {
         isSelected = true;
       }
 
-      this.adapter_.setRowCheckboxCheckedAtIndex(rowIndex, isSelected);
-      this.selectRowAtIndex_(rowIndex, isSelected);
+      this.adapter.setRowCheckboxCheckedAtIndex(rowIndex, isSelected);
+      this.selectRowAtIndex(rowIndex, isSelected);
     }
 
-    this.setHeaderRowCheckboxState_();
+    this.setHeaderRowCheckboxState();
+  }
+
+  /**
+   * @return Returns array of all row ids.
+   */
+  getRowIds(): Array<string|null> {
+    const rowIds = [];
+    for (let rowIndex = 0; rowIndex < this.adapter.getRowCount(); rowIndex++) {
+      rowIds.push(this.adapter.getRowIdAtIndex(rowIndex));
+    }
+
+    return rowIds;
   }
 
   /**
@@ -112,9 +153,9 @@ export class MDCDataTableFoundation extends MDCFoundation<MDCDataTableAdapter> {
    */
   getSelectedRowIds(): Array<string|null> {
     const selectedRowIds: Array<string|null> = [];
-    for (let rowIndex = 0; rowIndex < this.adapter_.getRowCount(); rowIndex++) {
-      if (this.adapter_.isCheckboxAtRowIndexChecked(rowIndex)) {
-        selectedRowIds.push(this.adapter_.getRowIdAtIndex(rowIndex));
+    for (let rowIndex = 0; rowIndex < this.adapter.getRowCount(); rowIndex++) {
+      if (this.adapter.isCheckboxAtRowIndexChecked(rowIndex)) {
+        selectedRowIds.push(this.adapter.getRowIdAtIndex(rowIndex));
       }
     }
 
@@ -125,17 +166,17 @@ export class MDCDataTableFoundation extends MDCFoundation<MDCDataTableAdapter> {
    * Handles header row checkbox change event.
    */
   handleHeaderRowCheckboxChange() {
-    const isHeaderChecked = this.adapter_.isHeaderRowCheckboxChecked();
+    const isHeaderChecked = this.adapter.isHeaderRowCheckboxChecked();
 
-    for (let rowIndex = 0; rowIndex < this.adapter_.getRowCount(); rowIndex++) {
-      this.adapter_.setRowCheckboxCheckedAtIndex(rowIndex, isHeaderChecked);
-      this.selectRowAtIndex_(rowIndex, isHeaderChecked);
+    for (let rowIndex = 0; rowIndex < this.adapter.getRowCount(); rowIndex++) {
+      this.adapter.setRowCheckboxCheckedAtIndex(rowIndex, isHeaderChecked);
+      this.selectRowAtIndex(rowIndex, isHeaderChecked);
     }
 
     if (isHeaderChecked) {
-      this.adapter_.notifySelectedAll();
+      this.adapter.notifySelectedAll();
     } else {
-      this.adapter_.notifyUnselectedAll();
+      this.adapter.notifyUnselectedAll();
     }
   }
 
@@ -143,47 +184,151 @@ export class MDCDataTableFoundation extends MDCFoundation<MDCDataTableAdapter> {
    * Handles change event originated from row checkboxes.
    */
   handleRowCheckboxChange(event: Event) {
-    const rowIndex = this.adapter_.getRowIndexByChildElement(event.target as HTMLInputElement);
+    const rowIndex = this.adapter.getRowIndexByChildElement(
+        event.target as HTMLInputElement);
 
     if (rowIndex === -1) {
       return;
     }
 
-    const selected = this.adapter_.isCheckboxAtRowIndexChecked(rowIndex);
+    const selected = this.adapter.isCheckboxAtRowIndexChecked(rowIndex);
 
-    this.selectRowAtIndex_(rowIndex, selected);
-    this.setHeaderRowCheckboxState_();
+    this.selectRowAtIndex(rowIndex, selected);
+    this.setHeaderRowCheckboxState();
 
-    const rowId = this.adapter_.getRowIdAtIndex(rowIndex);
-    this.adapter_.notifyRowSelectionChanged({rowId, rowIndex, selected});
+    const rowId = this.adapter.getRowIdAtIndex(rowIndex);
+    this.adapter.notifyRowSelectionChanged({rowId, rowIndex, selected});
+  }
+
+  /**
+   * Handles sort action on sortable header cell.
+   */
+  handleSortAction(eventData: SortActionEventData) {
+    const {columnId, columnIndex, headerCell} = eventData;
+
+    // Reset sort attributes / classes on other header cells.
+    for (let index = 0; index < this.adapter.getHeaderCellCount(); index++) {
+      if (index === columnIndex) {
+        continue;
+      }
+
+      this.adapter.removeClassNameByHeaderCellIndex(
+          index, cssClasses.HEADER_CELL_SORTED);
+      this.adapter.removeClassNameByHeaderCellIndex(
+          index, cssClasses.HEADER_CELL_SORTED_DESCENDING);
+      this.adapter.setAttributeByHeaderCellIndex(
+          index, attributes.ARIA_SORT, SortValue.NONE);
+      this.adapter.setSortStatusLabelByHeaderCellIndex(index, SortValue.NONE);
+    }
+
+    // Set appropriate sort attributes / classes on target header cell.
+    this.adapter.setClassNameByHeaderCellIndex(
+        columnIndex, cssClasses.HEADER_CELL_SORTED);
+
+    const currentSortValue = this.adapter.getAttributeByHeaderCellIndex(
+        columnIndex, attributes.ARIA_SORT);
+    let sortValue = SortValue.NONE;
+
+    // Set to descending if sorted on ascending order.
+    if (currentSortValue === SortValue.ASCENDING) {
+      this.adapter.setClassNameByHeaderCellIndex(
+          columnIndex, cssClasses.HEADER_CELL_SORTED_DESCENDING);
+      this.adapter.setAttributeByHeaderCellIndex(
+          columnIndex, attributes.ARIA_SORT, SortValue.DESCENDING);
+      sortValue = SortValue.DESCENDING;
+      // Set to ascending if sorted on descending order.
+    } else if (currentSortValue === SortValue.DESCENDING) {
+      this.adapter.removeClassNameByHeaderCellIndex(
+          columnIndex, cssClasses.HEADER_CELL_SORTED_DESCENDING);
+      this.adapter.setAttributeByHeaderCellIndex(
+          columnIndex, attributes.ARIA_SORT, SortValue.ASCENDING);
+      sortValue = SortValue.ASCENDING;
+    } else {
+      // Set to ascending by default when not sorted.
+      this.adapter.setAttributeByHeaderCellIndex(
+          columnIndex, attributes.ARIA_SORT, SortValue.ASCENDING);
+      sortValue = SortValue.ASCENDING;
+    }
+
+    this.adapter.setSortStatusLabelByHeaderCellIndex(columnIndex, sortValue);
+
+    this.adapter.notifySortAction({
+      columnId,
+      columnIndex,
+      headerCell,
+      sortValue,
+    });
+  }
+
+  /**
+   * Handles data table row click event.
+   */
+  handleRowClick({rowId, row, altKey, ctrlKey, metaKey, shiftKey}:
+                     RowClickEventData) {
+    this.adapter.notifyRowClick({
+      rowId,
+      row,
+      altKey,
+      ctrlKey,
+      metaKey,
+      shiftKey,
+    });
+  }
+
+  /**
+   * Shows progress indicator blocking only the table body content when in
+   * loading state.
+   */
+  showProgress() {
+    const tableHeaderHeight = this.adapter.getTableHeaderHeight();
+    // Calculate the height of table content (Not scroll content) excluding
+    // header row height.
+    const height = this.adapter.getTableContainerHeight() - tableHeaderHeight;
+    const top = tableHeaderHeight;
+
+    this.adapter.setProgressIndicatorStyles({
+      height: `${height}px`,
+      top: `${top}px`,
+    });
+    this.adapter.addClass(cssClasses.IN_PROGRESS);
+  }
+
+  /**
+   * Hides progress indicator when data table is finished loading.
+   */
+  hideProgress() {
+    this.adapter.removeClass(cssClasses.IN_PROGRESS);
   }
 
   /**
    * Updates header row checkbox state based on number of rows selected.
    */
-  private setHeaderRowCheckboxState_() {
-    if (this.adapter_.getSelectedRowCount() === this.adapter_.getRowCount()) {
-      this.adapter_.setHeaderRowCheckboxChecked(true);
-      this.adapter_.setHeaderRowCheckboxIndeterminate(false);
-    } else if (this.adapter_.getSelectedRowCount() === 0) {
-      this.adapter_.setHeaderRowCheckboxIndeterminate(false);
-      this.adapter_.setHeaderRowCheckboxChecked(false);
+  private setHeaderRowCheckboxState() {
+    if (this.adapter.getSelectedRowCount() === 0) {
+      this.adapter.setHeaderRowCheckboxChecked(false);
+      this.adapter.setHeaderRowCheckboxIndeterminate(false);
+    } else if (
+        this.adapter.getSelectedRowCount() === this.adapter.getRowCount()) {
+      this.adapter.setHeaderRowCheckboxChecked(true);
+      this.adapter.setHeaderRowCheckboxIndeterminate(false);
     } else {
-      this.adapter_.setHeaderRowCheckboxIndeterminate(true);
-      this.adapter_.setHeaderRowCheckboxChecked(false);
+      this.adapter.setHeaderRowCheckboxIndeterminate(true);
+      this.adapter.setHeaderRowCheckboxChecked(false);
     }
   }
 
   /**
    * Sets the attributes of row element based on selection state.
    */
-  private selectRowAtIndex_(rowIndex: number, selected: boolean) {
+  private selectRowAtIndex(rowIndex: number, selected: boolean) {
     if (selected) {
-      this.adapter_.addClassAtRowIndex(rowIndex, cssClasses.ROW_SELECTED);
-      this.adapter_.setAttributeAtRowIndex(rowIndex, strings.ARIA_SELECTED, 'true');
+      this.adapter.addClassAtRowIndex(rowIndex, cssClasses.ROW_SELECTED);
+      this.adapter.setAttributeAtRowIndex(
+          rowIndex, attributes.ARIA_SELECTED, 'true');
     } else {
-      this.adapter_.removeClassAtRowIndex(rowIndex, cssClasses.ROW_SELECTED);
-      this.adapter_.setAttributeAtRowIndex(rowIndex, strings.ARIA_SELECTED, 'false');
+      this.adapter.removeClassAtRowIndex(rowIndex, cssClasses.ROW_SELECTED);
+      this.adapter.setAttributeAtRowIndex(
+          rowIndex, attributes.ARIA_SELECTED, 'false');
     }
   }
 }

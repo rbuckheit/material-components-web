@@ -46,7 +46,7 @@ const isValidCwd = (
 
 if (!isValidCwd) {
   console.error(
-    'Invalid CWD. Please ensure you are running this from the root of the repo, and that you have run `npm run dist`'
+    'Invalid CWD. Please ensure you are running this from the root of the repo, and that you have run `npm run dist`',
   );
   process.exit(1);
 }
@@ -101,7 +101,7 @@ async function cpAsset(asset) {
     () => console.log(`cp ${asset} -> ${destDir}`),
     (err) => {
       throw err;
-    }
+    },
   );
 }
 
@@ -116,10 +116,15 @@ function dtsBundler() {
       if (error) {
         return;
       }
+      const isAllInOne = packageDirectory === ALL_IN_ONE_PACKAGE;
+      if (!isAllInOne) {
+        // Only the all-in-one package should generate a d.ts bundle
+        return;
+      }
+
       // d.ts file exists
       const packagePath = path.join(PACKAGES_DIRECTORY, packageDirectory);
       const name = JSON.parse(fs.readFileSync(path.join(packagePath, 'package.json'), 'utf8')).name;
-      const isAllInOne = packageDirectory === ALL_IN_ONE_PACKAGE;
       const destBasename
         = isAllInOne ? packageDirectory : `mdc.${toCamelCase(packageDirectory.replace(/^mdc-/, ''))}`;
       const destFilename = path.join(packagePath, 'dist', `${destBasename}.d.ts`);

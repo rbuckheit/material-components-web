@@ -1,0 +1,17 @@
+@use '../mixins' as checkbox;
+@use '@material/feature-targeting/feature-targeting';
+
+@mixin test($query) {
+  .test {
+    @include checkbox.container-colors($query: $query);
+    @include checkbox.ink-color(red, $query: $query);
+    @include checkbox.focus-indicator-color(red, $query: $query);
+    @include checkbox.ripple-styles($query: $query);
+    @include checkbox.ripple-size(0, $query: $query);
+    @include checkbox.touch-target(0, 0, $query: $query);
+    @include checkbox.density(0, $query: $query);
+  }
+}
+
+// This shouldn't output any CSS.
+@include test(feature-targeting.any());

@@ -23,56 +23,48 @@
 
 import {MDCComponent} from '@material/base/component';
 import {MDCRipple} from '@material/ripple/component';
+
 import {MDCFormFieldAdapter} from './adapter';
 import {MDCFormFieldFoundation} from './foundation';
 
+/** MDC Form Field Input */
 export interface MDCFormFieldInput {
-  readonly ripple: MDCRipple | undefined;
+  readonly ripple: MDCRipple|undefined;
 }
 
+/** MDC Form Field */
 export class MDCFormField extends MDCComponent<MDCFormFieldFoundation> {
-  static attachTo(root: HTMLElement) {
+  static override attachTo(root: HTMLElement) {
     return new MDCFormField(root);
   }
 
-  private input_?: MDCFormFieldInput;
+  input?: MDCFormFieldInput;
 
-  set input(input: MDCFormFieldInput | undefined) {
-    this.input_ = input;
-  }
-
-  get input(): MDCFormFieldInput | undefined {
-    return this.input_;
-  }
-
-  private get label_(): Element | null {
+  private labelEl() {
     const {LABEL_SELECTOR} = MDCFormFieldFoundation.strings;
-    return this.root_.querySelector(LABEL_SELECTOR);
+    return this.root.querySelector<HTMLElement>(LABEL_SELECTOR);
   }
 
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
+  override getDefaultFoundation() {
+    // DO NOT INLINE this variable. For backward compatibility, foundations take
+    // a Partial<MDCFooAdapter>. To ensure we don't accidentally omit any
+    // methods, we need a separate, strongly typed adapter variable.
     const adapter: MDCFormFieldAdapter = {
       activateInputRipple: () => {
-        if (this.input_ && this.input_.ripple) {
-          this.input_.ripple.activate();
+        if (this.input && this.input.ripple) {
+          this.input.ripple.activate();
         }
       },
       deactivateInputRipple: () => {
-        if (this.input_ && this.input_.ripple) {
-          this.input_.ripple.deactivate();
+        if (this.input && this.input.ripple) {
+          this.input.ripple.deactivate();
         }
       },
-      deregisterInteractionHandler: (evtType, handler) => {
-        if (this.label_) {
-          (this.label_ as HTMLElement).removeEventListener(evtType, handler);
-        }
+      deregisterInteractionHandler: (eventType, handler) => {
+        this.labelEl()?.removeEventListener(eventType, handler);
       },
-      registerInteractionHandler: (evtType, handler) => {
-        if (this.label_) {
-          (this.label_ as HTMLElement).addEventListener(evtType, handler);
-        }
+      registerInteractionHandler: (eventType, handler) => {
+        this.labelEl()?.addEventListener(eventType, handler);
       },
     };
     return new MDCFormFieldFoundation(adapter);

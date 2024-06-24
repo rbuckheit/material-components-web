@@ -22,16 +22,17 @@
  */
 
 /**
- * @fileoverview A "ponyfill" is a polyfill that doesn't modify the global prototype chain.
- * This makes ponyfills safer than traditional polyfills, especially for libraries like MDC.
+ * @fileoverview A "ponyfill" is a polyfill that doesn't modify the global
+ * prototype chain. This makes ponyfills safer than traditional polyfills,
+ * especially for libraries like MDC.
  */
 
-export function closest(element: Element, selector: string): Element | null {
+export function closest(element: Element, selector: string): Element|null {
   if (element.closest) {
     return element.closest(selector);
   }
 
-  let el: Element | null = element;
+  let el: Element|null = element;
   while (el) {
     if (matches(el, selector)) {
       return el;
@@ -41,9 +42,36 @@ export function closest(element: Element, selector: string): Element | null {
   return null;
 }
 
+/** Element.matches with support for webkit and IE. */
 export function matches(element: Element, selector: string): boolean {
-  const nativeMatches = element.matches
-      || element.webkitMatchesSelector
-      || element.msMatchesSelector;
+  const nativeMatches = element.matches || element.webkitMatchesSelector ||
+      (element as any).msMatchesSelector;
   return nativeMatches.call(element, selector);
+}
+
+/**
+ * Used to compute the estimated scroll width of elements. When an element is
+ * hidden due to display: none; being applied to a parent element, the width is
+ * returned as 0. However, the element will have a true width once no longer
+ * inside a display: none context. This method computes an estimated width when
+ * the element is hidden or returns the true width when the element is visble.
+ * @param {Element} element the element whose width to estimate
+ */
+export function estimateScrollWidth(element: Element): number {
+  // Check the offsetParent. If the element inherits display: none from any
+  // parent, the offsetParent property will be null (see
+  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent).
+  // This check ensures we only clone the node when necessary.
+  const htmlEl = element as HTMLElement;
+  if (htmlEl.offsetParent !== null) {
+    return htmlEl.scrollWidth;
+  }
+
+  const clone = htmlEl.cloneNode(true) as HTMLElement;
+  clone.style.setProperty('position', 'absolute');
+  clone.style.setProperty('transform', 'translate(-9999px, -9999px)');
+  document.documentElement.appendChild(clone);
+  const scrollWidth = clone.scrollWidth;
+  document.documentElement.removeChild(clone);
+  return scrollWidth;
 }

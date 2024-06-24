@@ -23,31 +23,39 @@
 
 import {MDCComponent} from '@material/base/component';
 import {MDCFloatingLabelFoundation} from '@material/floating-label/foundation';
+
 import {MDCNotchedOutlineAdapter} from './adapter';
 import {cssClasses, strings} from './constants';
 import {MDCNotchedOutlineFoundation} from './foundation';
 
-export type MDCNotchedOutlineFactory = (el: Element, foundation?: MDCNotchedOutlineFoundation) => MDCNotchedOutline;
+/** MDC Notched Outline Factory */
+export type MDCNotchedOutlineFactory =
+    (el: HTMLElement, foundation?: MDCNotchedOutlineFoundation) =>
+        MDCNotchedOutline;
 
-export class MDCNotchedOutline extends MDCComponent<MDCNotchedOutlineFoundation> {
-  static attachTo(root: Element): MDCNotchedOutline {
+/** MDC Notched Outline */
+export class MDCNotchedOutline extends
+    MDCComponent<MDCNotchedOutlineFoundation> {
+  static override attachTo(root: HTMLElement): MDCNotchedOutline {
     return new MDCNotchedOutline(root);
   }
 
-  private notchElement_!: HTMLElement; // assigned in initialSyncWithDOM()
+  private notchElement!: HTMLElement;  // assigned in initialSyncWithDOM()
 
-  initialSyncWithDOM() {
-    this.notchElement_ = this.root_.querySelector<HTMLElement>(strings.NOTCH_ELEMENT_SELECTOR)!;
+  override initialSyncWithDOM() {
+    this.notchElement =
+        this.root.querySelector<HTMLElement>(strings.NOTCH_ELEMENT_SELECTOR)!;
 
-    const label = this.root_.querySelector<HTMLElement>('.' + MDCFloatingLabelFoundation.cssClasses.ROOT);
+    const label = this.root.querySelector<HTMLElement>(
+        '.' + MDCFloatingLabelFoundation.cssClasses.ROOT);
     if (label) {
       label.style.transitionDuration = '0s';
-      this.root_.classList.add(cssClasses.OUTLINE_UPGRADED);
+      this.root.classList.add(cssClasses.OUTLINE_UPGRADED);
       requestAnimationFrame(() => {
         label.style.transitionDuration = '';
       });
     } else {
-      this.root_.classList.add(cssClasses.NO_LABEL);
+      this.root.classList.add(cssClasses.NO_LABEL);
     }
   }
 
@@ -56,25 +64,34 @@ export class MDCNotchedOutline extends MDCComponent<MDCNotchedOutlineFoundation>
    * @param notchWidth The notch width in the outline.
    */
   notch(notchWidth: number) {
-    this.foundation_.notch(notchWidth);
+    this.foundation.notch(notchWidth);
   }
 
   /**
    * Updates classes and styles to close the notch.
    */
   closeNotch() {
-    this.foundation_.closeNotch();
+    this.foundation.closeNotch();
   }
 
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
+  override getDefaultFoundation() {
+    // DO NOT INLINE this variable. For backward compatibility, foundations take
+    // a Partial<MDCFooAdapter>. To ensure we don't accidentally omit any
+    // methods, we need a separate, strongly typed adapter variable.
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     const adapter: MDCNotchedOutlineAdapter = {
-      addClass: (className) => this.root_.classList.add(className),
-      removeClass: (className) => this.root_.classList.remove(className),
-      setNotchWidthProperty: (width) => this.notchElement_.style.setProperty('width', width + 'px'),
-      removeNotchWidthProperty: () => this.notchElement_.style.removeProperty('width'),
+      addClass: (className) => {
+        this.root.classList.add(className);
+      },
+      removeClass: (className) => {
+        this.root.classList.remove(className);
+      },
+      setNotchWidthProperty: (width) => {
+        this.notchElement.style.setProperty('width', width + 'px');
+      },
+      removeNotchWidthProperty: () => {
+        this.notchElement.style.removeProperty('width');
+      },
     };
     // tslint:enable:object-literal-sort-keys
     return new MDCNotchedOutlineFoundation(adapter);

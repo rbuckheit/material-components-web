@@ -21,6 +21,10 @@
  * THE SOFTWARE.
  */
 
+import {MDCChipActionFocusBehavior, MDCChipActionType} from '../action/constants';
+
+import {MDCChipAttributes, MDCChipCssClasses, MDCChipEvents} from './constants';
+
 /**
  * Defines the shape of the adapter expected by the foundation.
  * Implement this adapter for your framework of choice to delegate updates to
@@ -29,85 +33,55 @@
  * https://github.com/material-components/material-components-web/blob/master/docs/code/architecture.md
  */
 export interface MDCChipAdapter {
-  /**
-   * Adds a class to the root element.
-   */
-  addClass(className: string): void;
+  /** Adds the given class to the root element. */
+  addClass(className: MDCChipCssClasses): void;
 
-  /**
-   * Removes a class from the root element.
-   */
-  removeClass(className: string): void;
+  /** Emits the given event with the given detail. */
+  emitEvent<D extends object>(eventName: MDCChipEvents, eventDetail: D): void;
 
-  /**
-   * @return true if the root element contains the given class.
-   */
-  hasClass(className: string): boolean;
+  /** Returns the child actions provided by the chip. */
+  getActions(): MDCChipActionType[];
 
-  /**
-   * Adds a class to the leading icon element.
-   */
-  addClassToLeadingIcon(className: string): void;
+  /** Returns the value for the given attribute, if it exists. */
+  getAttribute(attrName: MDCChipAttributes): string|null;
 
-  /**
-   * Removes a class from the leading icon element.
-   */
-  removeClassFromLeadingIcon(className: string): void;
+  /** Returns the ID of the root element. */
+  getElementID(): string;
 
-  /**
-   * @return true if target has className, false otherwise.
-   */
-  eventTargetHasClass(target: EventTarget | null, className: string): boolean;
+  /** Returns the offset width of the root element. */
+  getOffsetWidth(): number;
 
-  /**
-   * Emits a custom "MDCChip:interaction" event denoting the chip has been
-   * interacted with (typically on click or keydown).
-   */
-  notifyInteraction(): void;
+  /** Returns true if the root element has the given class. */
+  hasClass(className: MDCChipCssClasses): boolean;
 
-  /**
-   * Emits a custom "MDCChip:selection" event denoting the chip has been selected or deselected.
-   */
-  notifySelection(selected: boolean): void;
+  /** Proxies to the MDCChipAction#isSelectable method. */
+  isActionSelectable(action: MDCChipActionType): boolean;
 
-  /**
-   * Emits a custom "MDCChip:trailingIconInteraction" event denoting the trailing icon has been
-   * interacted with (typically on click or keydown).
-   */
-  notifyTrailingIconInteraction(): void;
+  /** Proxies to the MDCChipAction#isSelected method. */
+  isActionSelected(action: MDCChipActionType): boolean;
 
-  /**
-   * Emits a custom event "MDCChip:removal" denoting the chip will be removed.
-   */
-  notifyRemoval(): void;
+  /** Proxies to the MDCChipAction#isFocusable method. */
+  isActionFocusable(action: MDCChipActionType): boolean;
 
-  /**
-   * @return The computed property value of the given style property on the root element.
-   */
-  getComputedStyleValue(propertyName: string): string;
+  /** Proxies to the MDCChipAction#isDisabled method. */
+  isActionDisabled(action: MDCChipActionType): boolean;
 
-  /**
-   * Sets the property value of the given style property on the root element.
-   */
-  setStyleProperty(propertyName: string, value: string): void;
+  /** Returns true if the text direction is right-to-left. */
+  isRTL(): boolean;
 
-  /**
-   * @return Whether the chip has a leading icon.
-   */
-  hasLeadingIcon(): boolean;
+  /** Removes the given class from the root element. */
+  removeClass(className: MDCChipCssClasses): void;
 
-  /**
-   * @return The bounding client rect of the root element.
-   */
-  getRootBoundingClientRect(): ClientRect;
+  /** Proxies to the MDCChipAction#setDisabled method. */
+  setActionDisabled(action: MDCChipActionType, isDisabled: boolean): void;
 
-  /**
-   * @return The bounding client rect of the checkmark element or null if it doesn't exist.
-   */
-  getCheckmarkBoundingClientRect(): ClientRect | null;
+  /** Proxies to the MDCChipAction#setFocus method. */
+  setActionFocus(
+      action: MDCChipActionType, behavior: MDCChipActionFocusBehavior): void;
 
-  /**
-   * Sets the value of the attribute on the root element.
-   */
-  setAttr(attr: string, value: string): void;
+  /** Proxies to the MDCChipAction#setSelected method. */
+  setActionSelected(action: MDCChipActionType, isSelected: boolean): void;
+
+  /** Sets the style property to the given value. */
+  setStyleProperty(property: string, value: string): void;
 }

@@ -22,35 +22,52 @@
  */
 
 import {MDCComponent} from '@material/base/component';
+
 import {MDCSelectIconAdapter} from './adapter';
 import {MDCSelectIconFoundation} from './foundation';
 
-export type MDCSelectIconFactory = (el: Element, foundation?: MDCSelectIconFoundation) => MDCSelectIcon;
+/** MDC Select Icon Factory */
+export type MDCSelectIconFactory =
+    (el: HTMLElement, foundation?: MDCSelectIconFoundation) => MDCSelectIcon;
 
+/** MDC Select Icon */
 export class MDCSelectIcon extends MDCComponent<MDCSelectIconFoundation> {
-  static attachTo(root: Element): MDCSelectIcon {
+  static override attachTo(root: HTMLElement): MDCSelectIcon {
     return new MDCSelectIcon(root);
   }
 
-  get foundation(): MDCSelectIconFoundation {
-    return this.foundation_;
+  // Provided for access by MDCSelect component
+  get foundationForSelect(): MDCSelectIconFoundation {
+    return this.foundation;
   }
 
-  getDefaultFoundation() {
-    // DO NOT INLINE this variable. For backward compatibility, foundations take a Partial<MDCFooAdapter>.
-    // To ensure we don't accidentally omit any methods, we need a separate, strongly typed adapter variable.
+  override getDefaultFoundation() {
+    // DO NOT INLINE this variable. For backward compatibility, foundations take
+    // a Partial<MDCFooAdapter>. To ensure we don't accidentally omit any
+    // methods, we need a separate, strongly typed adapter variable.
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     const adapter: MDCSelectIconAdapter = {
-      getAttr: (attr) => this.root_.getAttribute(attr),
-      setAttr: (attr, value) => this.root_.setAttribute(attr, value),
-      removeAttr: (attr) => this.root_.removeAttribute(attr),
-      setContent: (content) => {
-        this.root_.textContent = content;
+      getAttr: (attr) => this.root.getAttribute(attr),
+      setAttr: (attr, value) => {
+        this.safeSetAttribute(this.root, attr, value);
       },
-      registerInteractionHandler: (evtType, handler) => this.listen(evtType, handler),
-      deregisterInteractionHandler: (evtType, handler) => this.unlisten(evtType, handler),
-      notifyIconAction: () => this.emit(
-          MDCSelectIconFoundation.strings.ICON_EVENT, {} /* evtData */, true /* shouldBubble */),
+      removeAttr: (attr) => {
+        this.root.removeAttribute(attr);
+      },
+      setContent: (content) => {
+        this.root.textContent = content;
+      },
+      registerInteractionHandler: (eventType, handler) => {
+        this.listen(eventType, handler);
+      },
+      deregisterInteractionHandler: (eventType, handler) => {
+        this.unlisten(eventType, handler);
+      },
+      notifyIconAction: () => {
+        this.emit(
+            MDCSelectIconFoundation.strings.ICON_EVENT, {} /* eventData */,
+            true /* shouldBubble */);
+      },
     };
     // tslint:enable:object-literal-sort-keys
     return new MDCSelectIconFoundation(adapter);

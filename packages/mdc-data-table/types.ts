@@ -21,8 +21,56 @@
  * THE SOFTWARE.
  */
 
+import {SortValue} from './constants';
+
 export interface MDCDataTableRowSelectionChangedEventDetail {
   rowIndex: number;
-  rowId: string | null;
+  rowId: string|null;
   selected: boolean;
+}
+
+/**
+ * Event data required for sort action callback - `handleSortAction()`.
+ * Component must send this data to foundation when sort action triggered on
+ * sortable header cell.
+ */
+export interface SortActionEventData {
+  columnId: string|null;
+  columnIndex: number;
+  headerCell: HTMLElement;
+}
+
+/**
+ * Event detail triggered by foundation on sort action. This event detail is
+ * used to trigger DOM event by component.
+ */
+export interface SortActionEventDetail {
+  columnId: string|null;
+  columnIndex: number;
+  headerCell: HTMLElement;
+  sortValue: SortValue;
+}
+
+/**
+ * Event data used for data table row click action.
+ */
+export interface RowClickEventData {
+  rowId: string|null;
+  row: HTMLElement;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
+}
+
+/** Event details used for data table row click action. */
+export interface RowClickEventDetail extends RowClickEventData {}
+
+/**
+ * Styles used to dynamically set dimensions of progress indicator based on
+ * table header & body.
+ */
+export interface ProgressIndicatorStyles {
+  height: string;
+  top: string;
 }

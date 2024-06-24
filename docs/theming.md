@@ -26,6 +26,7 @@ Finally, MDC Web has a number of text colors, which are used for rendering text 
 secondary and background colors. These are specified as either dark or light, in order to provide sufficient contrast to
 what's behind them, and have
 [different levels of opacity depending on usage](https://material.io/go/design-theming#color-color-schemes):
+
 - Primary, used for most text.
 - Secondary, used for text which is lower in the visual hierarchy.
 - Hint, used for text hints (such as those in text fields and labels).
@@ -129,6 +130,7 @@ Here's the markup:
       </div>
     </div>
     <button class="mdc-fab" id="demo-absolute-fab" aria-label="Favorite">
+      <div class="mdc-fab__ripple"></div>
       <span class="mdc-fab__icon material-icons">favorite</span>
     </button>
   </body>
@@ -229,16 +231,16 @@ however, the text would be dark again, for the same reason. So how _do_ we chang
 ### Step 3: Changing the theme with Sass
 
 The application-wide theme colors that are used as the default across your entire application can be set in Sass.
-This is as easy as defining three variables (`$mdc-theme-primary`, `$mdc-theme-secondary` and `$mdc-theme-background`) in
+This is as easy as defining three variables (`$primary`, `$secondary` and `$background`) in
 your Sass file, before importing any MDC Web modules.
 
 ```scss
-// My main Sass file.
-$mdc-theme-primary: #9c27b0;
-$mdc-theme-secondary: #76ff03;
-$mdc-theme-background: #fff;
-
-@import "material-components-web/material-components-web";
+@use "@material/theme" with (
+  $primary: #9c27b0,
+  $secondary: #76ff03,
+  $background: #fff,
+);
+@use "material-components-web";
 ```
 
 These definitions will override the defaults included in the `mdc-theme` module, which every themeable component depends
@@ -396,11 +398,13 @@ These mixins are documented in each component's README file
 (e.g., the [Button readme](../packages/mdc-button/README.md#advanced-sass-mixins)).
 
 For example, to change the fill color of a button and automatically select an accessible ink color,
-simply call the `mdc-button-filled-accessible` mixin inside a custom CSS class:
+simply call the `button.filled-accessible` mixin inside a custom CSS class:
 
 ```scss
+@use "@material/button";
+
 .accessible-button {
-  @include mdc-button-filled-accessible(blue);
+  @include button.filled-accessible(blue);
 }
 ```
 
@@ -408,7 +412,8 @@ Then apply the custom class to the button elements:
 
 ```html
 <button class="mdc-button accessible-button">
+  <div class="mdc-button__ripple"></div>
   <i class="material-icons mdc-button__icon" aria-hidden="true">favorite</i>
-  Button
+  <div class="mdc-button__label">Button</div>
 </button>
 ```
